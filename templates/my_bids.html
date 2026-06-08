@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h1 class="page-title">
+    我的競標
+</h1>
+
+<div class="products">
+
+{% for bid in bids %}
+
+<div class="bid-box">
+
+    <!-- 商品圖片 -->
+
+    <img
+        src="{{ bid.image }}"
+        class="bid-image"
+    >
+
+    <!-- 商品資訊 -->
+
+    <div class="bid-info">
+
+        <!-- 商品名稱 -->
+
+        <h3 class="bid-title">
+
+            {{ bid.title }}
+
+            <!-- 得標狀態 -->
+
+            {% if bid.is_winner == 2 %}
+
+    <span class="bidding-tag">
+        ⏳ 競標中
+    </span>
+
+{% elif bid.is_winner == 1 %}
+
+    <span class="winner-tag">
+        🏆 已得標
+    </span>
+
+{% else %}
+
+    <span class="loser-tag">
+        ❌ 未得標
+    </span>
+
+{% endif %}
+
+        </h3>
+
+        <!-- 出價 -->
+
+        <div class="price">
+
+            NT$ {{ bid.bid_price }}
+
+        </div>
+
+        <!-- 出價時間 -->
+
+        <small class="bid-time">
+
+            {{ bid.created_at }}
+
+        </small>
+
+        <br>
+
+        <!-- 查看競標 -->
+
+        <a
+            href="/product/{{ bid.product_id }}"
+            class="btn btn-shopee mt-3"
+        >
+
+            查看競標狀態
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

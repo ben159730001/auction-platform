@@ -1,0 +1,390 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<style>
+.admin-dashboard{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px;
+    margin-bottom:24px;
+}
+.admin-stat-card{
+    background:white;
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.08);
+    border:1px solid #f1f1f1;
+}
+.admin-stat-card span{
+    color:#777;
+    font-size:14px;
+    font-weight:700;
+}
+.admin-stat-card strong{
+    display:block;
+    margin-top:6px;
+    font-size:28px;
+    color:#ff5722;
+}
+.admin-filter-box{
+    background:white;
+    border-radius:18px;
+    padding:16px;
+    margin-bottom:22px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.08);
+}
+.admin-inline-form{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+.admin-inline-form input,
+.admin-inline-form select,
+.admin-inline-form textarea{
+    min-width:150px;
+}
+.admin-badge{
+    display:inline-block;
+    padding:5px 10px;
+    border-radius:999px;
+    font-weight:800;
+    font-size:13px;
+}
+.badge-ok{background:#dcfce7;color:#166534;}
+.badge-danger{background:#fee2e2;color:#991b1b;}
+.badge-warn{background:#fef3c7;color:#92400e;}
+.badge-muted{background:#e5e7eb;color:#374151;}
+.coin-plus{color:#16a34a;font-weight:900;}
+.coin-minus{color:#dc2626;font-weight:900;}
+.admin-section{margin-bottom:30px;}
+@media(max-width:992px){
+    .admin-dashboard{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:576px){
+    .admin-dashboard{grid-template-columns:1fr;}
+}
+</style>
+
+<h1 class="admin-title">🛡️ 管理員後台</h1>
+
+<div class="alert alert-info shadow-sm" style="border-radius:18px;">
+    目前後台角色：
+    <strong>
+        {% if current_admin_role == "super_admin" %}
+            超級管理員
+        {% elif current_admin_role == "support_admin" %}
+            客服管理員
+        {% elif current_admin_role == "review_admin" %}
+            審核管理員
+        {% else %}
+            一般會員
+        {% endif %}
+    </strong>
+</div>
+
+{% if current_admin_role == "super_admin" %}
+<div class="admin-dashboard">
+    <div class="admin-stat-card"><span>會員總數</span><strong>{{ stats.total_users }}</strong></div>
+    <div class="admin-stat-card"><span>停權會員</span><strong>{{ stats.banned_users }}</strong></div>
+    <div class="admin-stat-card"><span>商品總數</span><strong>{{ stats.total_products }}</strong></div>
+    <div class="admin-stat-card"><span>已下架商品</span><strong>{{ stats.hidden_products }}</strong></div>
+    <div class="admin-stat-card"><span>競標總次數</span><strong>{{ stats.total_bids }}</strong></div>
+    <div class="admin-stat-card"><span>待審核檢舉</span><strong>{{ stats.pending_reports }}</strong></div>
+    <div class="admin-stat-card"><span>已完成訂單</span><strong>{{ stats.completed_orders }}</strong></div>
+    <div class="admin-stat-card"><span>平台成交額</span><strong>NT$ {{ stats.total_sales }}</strong></div>
+</div>
+{% endif %}
+
+<div class="admin-filter-box">
+    <form method="GET" action="/admin" class="admin-inline-form">
+        <input
+            name="keyword"
+            class="form-control"
+            value="{{ keyword }}"
+            placeholder="搜尋帳號 / 商品 / 檢舉原因"
+        >
+        <select name="report_status" class="form-control">
+            <option value="">全部檢舉狀態</option>
+            {% for s in ["待審核", "已處理", "已駁回"] %}
+                <option value="{{ s }}" {% if report_status == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+        <select name="product_status" class="form-control">
+            <option value="">全部商品狀態</option>
+            <option value="visible" {% if product_status == 'visible' %}selected{% endif %}>正常顯示</option>
+            <option value="hidden" {% if product_status == 'hidden' %}selected{% endif %}>管理員下架</option>
+            <option value="paused" {% if product_status == 'paused' %}selected{% endif %}>賣家暫停</option>
+            <option value="completed" {% if product_status == 'completed' %}selected{% endif %}>已完成交易</option>
+        </select>
+        <button class="btn btn-shopee">搜尋 / 篩選</button>
+        <a href="/admin" class="btn btn-secondary">清除</a>
+    </form>
+</div>
+
+{% if current_admin_role == "super_admin" %}
+<div class="admin-section">
+    <h2>📢 公告管理</h2>
+    <form method="POST" action="/admin/add-announcement" class="admin-inline-form mb-3">
+        <input name="title" class="form-control" placeholder="公告標題" required>
+        <textarea name="content" class="form-control" placeholder="公告內容" rows="1" required></textarea>
+        <button class="btn btn-warning">新增公告</button>
+    </form>
+
+    <table class="admin-table">
+        <tr>
+            <th>ID</th><th>標題</th><th>內容</th><th>狀態</th><th>時間</th><th>操作</th>
+        </tr>
+        {% for a in announcements %}
+        <tr>
+            <td>{{ a.id }}</td>
+            <td>{{ a.title }}</td>
+            <td>{{ a.content }}</td>
+            <td>
+                {% if a.is_active == 1 %}
+                    <span class="admin-badge badge-ok">顯示中</span>
+                {% else %}
+                    <span class="admin-badge badge-muted">已隱藏</span>
+                {% endif %}
+            </td>
+            <td>{{ a.created_at }}</td>
+            <td>
+                <form method="POST" action="/admin/toggle-announcement/{{ a.id }}" style="display:inline;">
+                    <button class="admin-view-btn">切換顯示</button>
+                </form>
+                <form method="POST" action="/admin/delete-announcement/{{ a.id }}" style="display:inline;">
+                    <button class="admin-delete-btn" onclick="return confirm('確定刪除此公告嗎？')">刪除</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">目前沒有公告。</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endif %}
+
+{% if current_admin_role == "super_admin" %}
+<div class="admin-section">
+    <h2>👤 使用者管理</h2>
+    <table class="admin-table">
+        <tr>
+            <th>ID</th><th>帳號</th><th>Email</th><th>金幣</th><th>後台角色</th><th>狀態</th><th>操作</th>
+        </tr>
+        {% for u in users %}
+        <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.coins }}</td>
+            <td>
+                <form method="POST" action="/admin/set-admin-role/{{ u.id }}" class="admin-inline-form">
+                    <select name="admin_role" class="form-control" style="min-width:150px;">
+                        <option value="user" {% if (u.admin_role or 'user') == 'user' %}selected{% endif %}>一般會員</option>
+                        <option value="super_admin" {% if u.admin_role == 'super_admin' %}selected{% endif %}>超級管理員</option>
+                        <option value="support_admin" {% if u.admin_role == 'support_admin' %}selected{% endif %}>客服管理員</option>
+                        <option value="review_admin" {% if u.admin_role == 'review_admin' %}selected{% endif %}>審核管理員</option>
+                    </select>
+                    <button class="admin-view-btn" onclick="return confirm('確定修改此使用者的後台權限嗎？')">更新</button>
+                </form>
+            </td>
+            <td>
+                {% if u.is_banned == 1 %}
+                    <span class="admin-badge badge-danger">已停權</span>
+                    <div class="text-muted">{{ u.ban_reason or '' }}</div>
+                {% else %}
+                    <span class="admin-badge badge-ok">正常</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if u.is_banned == 1 %}
+                    <form method="POST" action="/admin/unban-user/{{ u.id }}" style="display:inline;">
+                        <button class="admin-view-btn">解封</button>
+                    </form>
+                {% else %}
+                    <form method="POST" action="/admin/ban-user/{{ u.id }}" class="admin-inline-form" style="display:inline-flex;">
+                        <input name="ban_reason" class="form-control" placeholder="停權原因" style="width:150px;">
+                        <button class="admin-delete-btn" onclick="return confirm('確定停權此使用者嗎？')">停權</button>
+                    </form>
+                {% endif %}
+                <a href="/admin/delete-user/{{ u.id }}" class="admin-delete-btn" onclick="return confirm('確定刪除此使用者嗎？')">刪除</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endif %}
+
+{% if current_admin_role in ["super_admin", "review_admin"] %}
+<div class="admin-section">
+    <h2>📦 商品管理</h2>
+    <table class="admin-table">
+        <tr>
+            <th>ID</th><th>商品</th><th>賣家</th><th>價格</th><th>分類</th><th>狀態</th><th>操作</th>
+        </tr>
+        {% for p in products %}
+        <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.title }}</td>
+            <td>{{ p.username }}</td>
+            <td>NT$ {{ p.current_price }}</td>
+            <td>{{ p.category }}</td>
+            <td>
+                <div>{{ p['condition'] if 'condition' in p.keys() and p['condition'] else '二手' }}</div>
+                {% if p.admin_hidden == 1 %}
+                    <span class="admin-badge badge-danger">管理員下架</span>
+                    <div class="text-muted">{{ p.admin_hidden_reason or '' }}</div>
+                {% elif p.is_paused == 1 %}
+                    <span class="admin-badge badge-muted">賣家暫停</span>
+                {% elif p.is_completed == 1 %}
+                    <span class="admin-badge badge-ok">已完成</span>
+                {% else %}
+                    <span class="admin-badge badge-ok">顯示中</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="/product/{{ p.id }}" class="admin-view-btn">查看</a>
+                {% if p.admin_hidden == 1 %}
+                    <a href="/admin/restore-product/{{ p.id }}" class="admin-view-btn">恢復上架</a>
+                {% else %}
+                    <a href="/admin/hide-product/{{ p.id }}" class="admin-delete-btn" onclick="return confirm('確定下架此商品嗎？資料會保留。')">下架</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endif %}
+
+{% if current_admin_role == "super_admin" %}
+<div class="admin-section">
+    <h2>💰 金幣異動紀錄</h2>
+    <table class="admin-table">
+        <tr>
+            <th>ID</th><th>使用者</th><th>異動</th><th>原因</th><th>時間</th>
+        </tr>
+        {% for c in coin_logs %}
+        <tr>
+            <td>{{ c.id }}</td>
+            <td>{{ c.username or '未知使用者' }}</td>
+            <td>
+                {% if c.amount >= 0 %}
+                    <span class="coin-plus">+{{ c.amount }}</span>
+                {% else %}
+                    <span class="coin-minus">{{ c.amount }}</span>
+                {% endif %}
+            </td>
+            <td>{{ c.reason }}</td>
+            <td>{{ c.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">目前沒有金幣異動紀錄。</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endif %}
+
+{% if current_admin_role in ["super_admin", "review_admin"] %}
+<div class="admin-section">
+    <h2>🚩 檢舉審核</h2>
+    <table class="admin-table">
+        <tr>
+            <th>ID</th><th>商品</th><th>檢舉人</th><th>原因</th><th>狀態</th><th>管理備註</th><th>操作</th>
+        </tr>
+        {% for r in reports %}
+        <tr>
+            <td>{{ r.id }}</td>
+            <td>{{ r.title or '商品已刪除' }}</td>
+            <td>{{ r.username or '未知使用者' }}</td>
+            <td>{{ r.reason }}</td>
+            <td>{{ r.status or '待審核' }}</td>
+            <td>{{ r.admin_note or '' }}</td>
+            <td>
+                <form method="POST" action="/admin/review-report/{{ r.id }}" style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <input name="admin_note" class="form-control" placeholder="備註" style="min-width:140px;">
+                    <button name="action" value="block_product" class="admin-delete-btn" onclick="return confirm('確定封鎖此商品嗎？')">封鎖商品</button>
+                    <button name="action" value="warn_user" class="admin-view-btn">警告賣家</button>
+                    <button name="action" value="reject" class="admin-view-btn">駁回</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7">目前沒有檢舉資料。</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endif %}
+
+{% if current_admin_role in ["super_admin", "support_admin", "review_admin"] %}
+<div class="admin-section">
+    <h2>💰 競標紀錄</h2>
+    <table class="admin-table">
+        <tr><th>ID</th><th>商品</th><th>出價者</th><th>金額</th><th>時間</th></tr>
+        {% for b in bids %}
+        <tr>
+            <td>{{ b.id }}</td><td>{{ b.title }}</td><td>{{ b.username }}</td><td>NT$ {{ b.bid_price }}</td><td>{{ b.created_at }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endif %}
+
+{% if current_admin_role in ["super_admin", "support_admin"] %}
+<div class="admin-section">
+    <h2>💬 聊天室留言</h2>
+    <table class="admin-table">
+        <tr><th>ID</th><th>商品</th><th>使用者</th><th>留言</th><th>時間</th><th>操作</th></tr>
+        {% for m in messages %}
+        <tr>
+            <td>{{ m.id }}</td><td>{{ m.title }}</td><td>{{ m.username }}</td><td>{{ m.message }}</td><td>{{ m.created_at }}</td>
+            <td><a href="/admin/delete-message/{{ m.id }}" class="admin-delete-btn" onclick="return confirm('確定刪除此留言嗎？')">刪除</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endif %}
+
+{% if current_admin_role in ["super_admin", "support_admin"] %}
+<div class="admin-section">
+    <h2>📦 交易訂單</h2>
+    <table class="admin-table">
+        <tr>
+            <th>ID</th><th>商品</th><th>賣家</th><th>買家</th><th>成交價</th><th>交易狀態</th><th>付款狀態</th><th>付款方式</th><th>更新時間</th>
+        </tr>
+        {% for o in orders %}
+        <tr>
+            <td>{{ o.id }}</td><td>{{ o.title }}</td><td>{{ o.seller_name }}</td><td>{{ o.buyer_name }}</td><td>NT$ {{ o.final_price }}</td><td>{{ o.status }}</td><td>{{ o.payment_status or '未付款' }}</td><td>{{ o.payment_method or '-' }}</td><td>{{ o.updated_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9">目前沒有交易訂單。</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endif %}
+
+{% if current_admin_role in ["super_admin", "support_admin"] %}
+<div class="admin-section">
+    <h2>❓ 商品問答管理</h2>
+    <table class="admin-table">
+        <tr><th>ID</th><th>商品</th><th>提問者</th><th>問題</th><th>回覆</th><th>時間</th></tr>
+        {% for q in questions %}
+        <tr>
+            <td>{{ q.id }}</td><td>{{ q.title }}</td><td>{{ q.asker_name }}</td><td>{{ q.question }}</td><td>{{ q.answer or '尚未回覆' }}</td><td>{{ q.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">目前沒有商品問答。</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endif %}
+
+{% endblock %}

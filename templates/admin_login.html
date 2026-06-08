@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="form-box" style="max-width:520px;margin:40px auto;">
+
+    <h2 class="form-title">
+        🛡️ 管理員後台驗證
+    </h2>
+
+    <div class="alert alert-warning" style="border-radius:18px;">
+        進入管理員後台前，請輸入後台專用密碼。
+    </div>
+
+    <form method="POST">
+
+        <div class="mb-3">
+            <label class="form-label">
+                後台密碼
+            </label>
+
+            <input
+                type="password"
+                name="admin_password"
+                class="form-control"
+                placeholder="請輸入管理員後台密碼"
+                required
+                autofocus
+            >
+        </div>
+
+        <button class="btn btn-shopee w-100">
+            進入後台
+        </button>
+
+        <a href="/" class="btn btn-secondary w-100 mt-2">
+            返回首頁
+        </a>
+
+    </form>
+
+    <small class="text-muted d-block mt-3">
+        預設密碼是 admin123；正式展示前可用環境變數 ADMIN_PANEL_PASSWORD 修改。
+    </small>
+
+</div>
+
+{% endblock %}

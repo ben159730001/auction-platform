@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block content %}
+<a href="/forgot-password">
+    忘記密碼？
+</a>
+<div class="form-box">
+
+
+    <form method="POST">
+
+        <div class="row mb-3">
+
+            <div class="col-md-6">
+
+                <label class="mb-2">帳號</label>
+
+                <input
+                    type="text"
+                    name="username"
+                    class="form-control"
+                    required
+                >
+
+            </div>
+
+            <div class="col-md-6">
+
+                <label class="mb-2">密碼</label>
+
+                <input
+                    type="password"
+                    name="password"
+                    class="form-control"
+                    required
+                >
+
+            </div>
+
+        </div>
+
+        <button class="btn btn-shopee w-100">
+
+            登入
+
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="register-box">
+
+    <h2 style="font-size:30px;">
+        🎓 校園註冊
+    </h2>
+
+    <form method="POST">
+
+        <div class="mb-3">
+
+            <label>帳號名稱：</label>
+
+            <input
+                name="username"
+                class="form-control"
+                required
+            >
+
+        </div>
+
+        <!-- 新增這段 -->
+
+        <div class="mb-3">
+
+            <label>學校信箱：</label>
+
+            <input
+                name="email"
+                type="email"
+                class="form-control"
+                placeholder="例如：s123456@gm.student.ncut.edu.tw"
+                required
+            >
+
+        </div>
+
+        <div class="mb-3">
+
+            <label>密碼：</label>
+
+            <input
+                name="password"
+                type="password"
+                class="form-control"
+                required
+            >
+
+        </div>
+
+        <button class="btn btn-shopee">
+
+            註冊
+
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

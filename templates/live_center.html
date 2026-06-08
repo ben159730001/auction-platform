@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>🎥 我的直播中心</h2>
+
+    <hr>
+
+    <div class="card p-4 shadow">
+
+        <h4>開始新的直播</h4>
+
+        <p class="text-muted">
+            建立一個新的直播間，自訂標題，立即開始直播。
+        </p>
+
+        <a
+            href="/live/create"
+            class="btn btn-danger btn-lg"
+        >
+            🔴 建立直播
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,2383 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    background:#f5f5f5;
+
+    font-family:Arial,sans-serif;
+
+    color:#222;
+
+    overflow-x:hidden;
+
+}
+
+/* NAVBAR */
+
+.shopee-nav{
+
+    background:
+        linear-gradient(
+            45deg,
+            #ee4d2d,
+            #ff7337
+        );
+
+    padding:15px 30px;
+
+    position:sticky;
+
+    top:0;
+
+    z-index:999;
+
+    box-shadow:
+        0 4px 15px rgba(238,77,45,0.25);
+
+}
+
+.nav-container{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:20px;
+
+}
+
+.logo{
+
+    color:white;
+
+    font-size:30px;
+
+    font-weight:bold;
+
+    text-decoration:none;
+
+    transition:0.3s;
+
+}
+
+.logo:hover{
+
+    transform:scale(1.05);
+
+}
+
+/* 搜尋 */
+
+.nav-center{
+
+    flex:1;
+
+    display:flex;
+
+    justify-content:center;
+
+}
+
+.navbar-search{
+
+    display:flex;
+
+    width:100%;
+
+    max-width:500px;
+
+}
+
+.navbar-search input{
+
+    flex:1;
+
+    padding:12px;
+
+    border:none;
+
+    border-radius:10px 0 0 10px;
+
+    outline:none;
+
+}
+
+.navbar-search button{
+
+    border:none;
+
+    padding:12px 20px;
+
+    background:white;
+
+    font-weight:bold;
+
+    border-radius:0 10px 10px 0;
+
+}
+
+/* 右側 */
+
+.nav-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+.nav-link-custom{
+
+    color:white;
+
+    text-decoration:none;
+
+    font-weight:bold;
+
+    transition:0.3s;
+
+}
+
+.nav-link-custom:hover{
+
+    opacity:0.75;
+
+}
+
+.nav-user{
+
+    color:white;
+
+    font-weight:bold;
+
+}
+
+.logout-btn,
+.register-btn{
+
+    background:white;
+
+    color:#ee4d2d;
+
+    padding:10px 15px;
+
+    border-radius:10px;
+
+    text-decoration:none;
+
+    font-weight:bold;
+
+    transition:0.3s;
+
+}
+
+.logout-btn:hover,
+.register-btn:hover{
+
+    transform:scale(1.05);
+
+}
+
+/* 金幣 */
+
+.coin-box{
+
+    background:
+        linear-gradient(
+            45deg,
+            #ffd700,
+            #ffb300
+        );
+
+    padding:10px 18px;
+
+    border-radius:999px;
+
+    font-weight:bold;
+
+    color:#5a3b00;
+
+    box-shadow:
+        0 4px 12px rgba(255,193,7,0.3);
+
+}
+
+/* HERO */
+
+.hero-banner{
+
+    height:380px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    background:white;
+
+    border-radius:25px;
+
+    margin-bottom:30px;
+
+    box-shadow:
+        0 5px 20px rgba(238,77,45,0.12);
+
+}
+
+.hero-content{
+
+    z-index:2;
+
+}
+
+.hero-logo{
+
+    width:140px;
+
+    margin-bottom:20px;
+
+    animation:
+        float 3s infinite ease-in-out;
+
+}
+
+.hero-title{
+
+    font-size:62px;
+
+    color:#ee4d2d;
+
+    text-shadow:
+        0 0 15px rgba(238,77,45,0.25);
+
+}
+
+.hero-subtitle{
+
+    margin-top:15px;
+
+    color:#666;
+
+    letter-spacing:3px;
+
+}
+
+.hero-description{
+
+    margin-top:20px;
+
+    font-size:28px;
+
+    font-weight:bold;
+
+    color:#ee4d2d;
+
+}
+
+.hero-coins{
+
+    margin-top:25px;
+
+    font-size:32px;
+
+    font-weight:bold;
+
+    color:#ff9900;
+
+    text-shadow:
+        0 0 10px rgba(255,180,0,0.35);
+
+    animation:
+        glowCoins 1.5s infinite alternate;
+
+}
+
+/* 主區塊 */
+
+.main-layout{
+
+    display:flex;
+
+    align-items:flex-start;
+
+    width:100%;
+
+}
+
+/* 左側 */
+
+.sidebar{
+
+    width:230px;
+
+    min-height:100vh;
+
+    background:white;
+
+    padding:25px;
+
+    margin-right:30px;
+
+    border-radius:20px;
+
+    box-shadow:
+        0 5px 20px rgba(238,77,45,0.08);
+
+    position:sticky;
+
+    top:100px;
+
+}
+
+.category-title{
+
+    color:#ee4d2d;
+
+    margin-bottom:20px;
+
+    font-size:24px;
+
+}
+
+.sidebar-btn{
+
+    display:block;
+
+    padding:14px;
+
+    margin-bottom:12px;
+
+    border-radius:12px;
+
+    text-decoration:none;
+
+    color:#333;
+
+    background:#f3f5f7;
+
+    font-weight:bold;
+
+    transition:0.3s;
+
+}
+
+.sidebar-btn:hover{
+
+    background:#ee4d2d;
+
+    color:white;
+
+    transform:translateX(5px);
+
+}
+
+/* 右側 */
+
+.content-area{
+
+    flex:1;
+
+    padding:10px;
+
+}
+
+/* 商品區 */
+
+.product-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(auto-fill,minmax(260px,1fr));
+
+    gap:25px;
+
+}
+
+/* 商品卡 */
+
+.product-card{
+
+    background:white;
+
+    border-radius:22px;
+
+    overflow:hidden;
+
+    transition:0.4s;
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.08);
+
+}
+
+.product-card:hover{
+
+    transform:
+        translateY(-10px);
+
+    box-shadow:
+        0 0 35px rgba(238,77,45,0.22);
+
+}
+
+.product-image{
+
+    width:100%;
+
+    height:240px;
+
+    object-fit:cover;
+
+}
+
+.p-3{
+
+    padding:22px;
+
+}
+
+.product-title{
+
+    font-size:24px;
+
+    margin-bottom:12px;
+
+}
+
+/* 價格 */
+
+.price{
+
+    color:#ee4d2d;
+
+    font-size:28px;
+
+    font-weight:bold;
+
+    margin-bottom:10px;
+
+}
+
+/* 分類 */
+
+.category{
+
+    color:#777;
+
+    margin-bottom:20px;
+
+}
+
+/* 按鈕 */
+
+.btn-auction,
+.btn-shopee{
+
+    display:block;
+
+    text-align:center;
+
+    padding:14px;
+
+    border-radius:14px;
+
+    text-decoration:none;
+
+    font-weight:bold;
+
+    color:white;
+
+    background:
+        linear-gradient(
+            45deg,
+            #ee4d2d,
+            #ff7337
+        );
+
+    transition:0.3s;
+
+    border:none;
+
+}
+
+.btn-auction:hover,
+.btn-shopee:hover{
+
+    transform:scale(1.05);
+
+    color:white;
+
+    box-shadow:
+        0 0 20px rgba(238,77,45,0.35);
+
+}
+
+/* 詳細頁 */
+
+.detail-image{
+
+    width:100%;
+
+    border-radius:20px;
+
+}
+
+.detail-price{
+
+    font-size:42px;
+
+    color:#ee4d2d;
+
+    margin:20px 0;
+
+}
+
+/* 出價紀錄 */
+
+.bid-box{
+
+    background:white;
+
+    padding:18px;
+
+    border-radius:14px;
+
+    margin-bottom:12px;
+
+    display:flex;
+
+    gap:20px;
+
+    align-items:center;
+
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.06);
+
+}
+
+.bid-image{
+
+    width:140px;
+
+    height:140px;
+
+    object-fit:cover;
+
+    border-radius:15px;
+
+}
+
+.bid-info{
+
+    flex:1;
+
+}
+
+/* 表單 */
+
+.form-box{
+
+    background:white;
+
+    padding:35px;
+
+    border-radius:20px;
+
+    max-width:700px;
+
+    margin:auto;
+
+    box-shadow:
+        0 5px 20px rgba(238,77,45,0.08);
+
+}
+
+.form-title{
+
+    text-align:center;
+
+    margin-bottom:30px;
+
+    color:#ee4d2d;
+
+}
+
+.form-label{
+
+    font-weight:bold;
+
+    margin-bottom:8px;
+
+}
+
+.form-control{
+
+    padding:12px;
+
+    border-radius:12px;
+
+    border:1px solid #ddd;
+
+}
+
+/* 註冊 */
+
+.register-box{
+
+    width:420px;
+
+    margin:100px auto;
+
+    background:white;
+
+    padding:40px;
+
+    border-radius:20px;
+
+    text-align:center;
+
+    box-shadow:
+        0 5px 20px rgba(238,77,45,0.08);
+
+}
+
+.register-box input{
+
+    width:100%;
+
+    padding:14px;
+
+    margin-top:10px;
+
+    margin-bottom:20px;
+
+    border:1px solid #ddd;
+
+    border-radius:10px;
+
+}
+
+/* FLASH */
+
+.flash-area{
+
+    position:fixed;
+
+    top:90px;
+
+    right:30px;
+
+    z-index:9999;
+
+}
+
+.flash-message{
+
+    padding:15px 25px;
+
+    margin-bottom:12px;
+
+    border-radius:14px;
+
+    color:white;
+
+    font-weight:bold;
+
+    animation:slideIn 0.4s ease;
+
+}
+
+.flash-message.success{
+
+    background:
+        linear-gradient(
+            45deg,
+            #ee4d2d,
+            #ff7337
+        );
+
+}
+
+/* 禁止競標自己的商品 */
+
+.flash-message.danger{
+
+    background:
+        linear-gradient(
+            45deg,
+            #ff0033,
+            #ff5555
+        );
+
+    position:fixed;
+
+    top:50%;
+
+    left:50%;
+
+    transform:translate(-50%, -50%);
+
+    font-size:38px;
+
+    font-weight:bold;
+
+    padding:30px 60px;
+
+    border-radius:25px;
+
+    z-index:99999;
+
+    text-align:center;
+
+    box-shadow:
+        0 0 40px rgba(255,0,0,0.35);
+
+    animation:
+        dangerPop 0.4s ease;
+
+}
+
+/* 動畫 */
+
+@keyframes float{
+
+    0%{
+        transform:translateY(0px);
+    }
+
+    50%{
+        transform:translateY(-10px);
+    }
+
+    100%{
+        transform:translateY(0px);
+    }
+
+}
+
+@keyframes slideIn{
+
+    from{
+
+        transform:translateX(120%);
+        opacity:0;
+
+    }
+
+    to{
+
+        transform:translateX(0);
+        opacity:1;
+
+    }
+
+}
+
+@keyframes glowCoins{
+
+    from{
+
+        transform:scale(1);
+
+        opacity:0.9;
+
+    }
+
+    to{
+
+        transform:scale(1.05);
+
+        opacity:1;
+
+    }
+
+}
+
+@keyframes dangerPop {
+
+    from {
+
+        transform:
+            translate(-50%, -50%)
+            scale(0.7);
+
+        opacity:0;
+
+    }
+
+    to {
+
+        transform:
+            translate(-50%, -50%)
+            scale(1);
+
+        opacity:1;
+
+    }
+
+}
+
+/* 手機版 */
+
+@media(max-width:900px){
+
+    .main-layout{
+
+        flex-direction:column;
+
+    }
+
+    .sidebar{
+
+        width:100%;
+
+        margin-bottom:20px;
+
+        position:relative;
+
+        top:0;
+
+        min-height:auto;
+
+    }
+
+    .content-area{
+
+        width:100%;
+
+    }
+
+    .hero-title{
+
+        font-size:40px;
+
+    }
+
+    .nav-container{
+
+        flex-direction:column;
+
+    }
+
+    .nav-right{
+
+        flex-wrap:wrap;
+
+        justify-content:center;
+
+    }
+
+}
+.chat-box {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    margin-top: 30px;
+    box-shadow: 0 5px 20px rgba(238,77,45,0.08);
+}
+
+.chat-messages {
+    height: 260px;
+    overflow-y: auto;
+    background: #f8f8f8;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+}
+
+.chat-message {
+    background: white;
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input-area input {
+    flex: 1;
+}
+/* 金幣圖示 */
+
+.coin-icon{
+
+    width:26px;
+
+    height:26px;
+
+    margin-right:8px;
+
+    vertical-align:middle;
+
+    animation:
+        coinSpin 2s linear infinite;
+
+}
+
+@keyframes coinSpin{
+
+    from{
+
+        transform:rotateY(0deg);
+
+    }
+
+    to{
+
+        transform:rotateY(360deg);
+
+    }
+
+}
+
+/* 得標提醒 */
+
+.winner-alert{
+
+    background:
+        linear-gradient(
+            45deg,
+            #ffd700,
+            #ff9900
+        );
+
+    color:#5a3b00;
+
+    font-size:32px;
+
+    font-weight:bold;
+
+    text-align:center;
+
+    padding:25px 40px;
+
+    border-radius:25px;
+
+    margin-bottom:25px;
+
+    box-shadow:
+        0 0 35px rgba(255,180,0,0.45);
+
+    animation:
+        winnerPop 0.5s ease;
+
+}
+
+@keyframes winnerPop{
+
+    from{
+
+        transform:scale(0.7);
+
+        opacity:0;
+
+    }
+
+    to{
+
+        transform:scale(1);
+
+        opacity:1;
+
+    }
+
+}
+
+.edit-chat-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.edit-chat-form input {
+    flex: 1;
+}
+
+.edit-chat-form button {
+    min-width: 70px;
+}
+
+/* 得標標籤 */
+
+.winner-tag{
+
+    background:#28c76f;
+
+    color:white;
+
+    padding:6px 14px;
+
+    border-radius:30px;
+
+    font-size:16px;
+
+    margin-left:12px;
+
+    font-weight:bold;
+
+}
+
+/* 未得標標籤 */
+
+.loser-tag{
+
+    background:#ff4d4f;
+
+    color:white;
+
+    padding:6px 14px;
+
+    border-radius:30px;
+
+    font-size:16px;
+
+    margin-left:12px;
+
+    font-weight:bold;
+
+}
+
+/* 競標中 */
+
+.bidding-tag{
+
+    background:#ff9800;
+
+    color:white;
+
+    padding:6px 14px;
+
+    border-radius:30px;
+
+    font-size:16px;
+
+    margin-left:12px;
+
+    font-weight:bold;
+
+}
+
+.notification-list{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.notification-card{
+    display:block;
+    background:white;
+    padding:20px;
+    border-radius:18px;
+    text-decoration:none;
+    color:#333;
+    font-weight:bold;
+    box-shadow:0 5px 20px rgba(238,77,45,0.08);
+    transition:0.3s;
+}
+
+.notification-card:hover{
+    transform:translateY(-5px);
+    color:#ee4d2d;
+}
+
+/* 通知頁面 */
+
+.notification-card{
+
+    font-size: 28px;
+
+    font-weight: bold;
+
+    padding: 30px;
+
+    line-height: 1.8;
+
+}
+
+.notification-card small{
+
+    display: block;
+
+    margin-top: 10px;
+
+    font-size: 18px;
+
+    color: #666;
+
+}
+
+/* 商品瀏覽次數 */
+
+.view-count{
+
+    font-size: 22px;
+
+    font-weight: bold;
+
+    color: #ff6b35;
+
+    margin-top: 10px;
+
+}
+
+/* 上架商品分類選單 */
+
+.category-select{
+
+    width: 100%;
+
+    padding: 18px 20px;
+
+    border: none;
+
+    border-radius: 18px;
+
+    background: #f5f5f5;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    color: #333;
+
+    transition: 0.3s;
+
+    outline: none;
+
+    cursor: pointer;
+
+}
+
+/* hover */
+
+.category-select:hover{
+
+    background: #fff1ec;
+
+}
+
+/* focus */
+
+.category-select:focus{
+
+    background: white;
+
+    box-shadow: 0 0 0 4px rgba(238,77,45,0.15);
+
+}
+
+/* option */
+
+.category-select option{
+
+    padding: 10px;
+
+    background: white;
+
+    color: #333;
+
+}
+
+.category-choice-box{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+    gap:12px;
+}
+
+.category-choice{
+    border:none;
+    padding:16px;
+    border-radius:14px;
+    background:#f3f5f7;
+    font-weight:bold;
+    color:#333;
+    transition:0.3s;
+}
+
+.category-choice:hover,
+.category-choice.active{
+    background:#ee4d2d;
+    color:white;
+    transform:translateY(-3px);
+}
+
+.winner-box{
+
+    background:
+        linear-gradient(
+            45deg,
+            #ffd700,
+            #ff9900
+        );
+
+    color:#5a3b00;
+
+    padding:20px 25px;
+
+    border-radius:20px;
+
+    margin:20px 0;
+
+    font-size:24px;
+
+    font-weight:bold;
+
+    box-shadow:
+        0 0 25px rgba(255,180,0,0.35);
+
+}
+
+.sort-box{
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:20px;
+}
+
+.sort-select{
+    padding:14px 20px;
+    border-radius:15px;
+    border:2px solid #ee4d2d;
+    color:#ee4d2d;
+    font-weight:bold;
+    outline:none;
+    background:white;
+}
+.tag-reply-btn{
+    margin-left:10px;
+    border:none;
+    background:#ee4d2d;
+    color:white;
+    padding:6px 12px;
+    border-radius:12px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.tag-reply-btn:hover{
+    background:#ff7337;
+}
+
+/* 一般聊天室訊息 */
+
+.chat-message{
+
+    background: #f5f5f5;
+
+    padding: 14px 18px;
+
+    border-radius: 14px;
+
+    margin-bottom: 12px;
+
+    font-size: 18px;
+
+}
+
+/* 賣家 TAG 回覆訊息 */
+
+.chat-message:has(span[class*="@"]),
+
+.chat-message .tag-message{
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff0ea,
+            #ffe2d6
+        );
+
+    border-left: 6px solid #ee4d2d;
+
+    color: #d84315;
+
+    font-weight: bold;
+
+    box-shadow:
+        0 4px 12px rgba(238,77,45,0.15);
+
+}
+
+/* TAG 使用者 */
+
+.chat-message span{
+
+    word-break: break-word;
+
+}
+
+/* @TAG 顏色 */
+
+.chat-message span:has-text("@"){
+
+    color: #ee4d2d;
+
+    font-weight: bold;
+
+}
+
+.recalled-message{
+    color:#999;
+    font-style:italic;
+}
+
+.edit-chat-form{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+}
+
+.edit-chat-form input{
+    flex:1;
+}
+
+.admin-title{
+    font-size:36px;
+    font-weight:bold;
+    color:#ee4d2d;
+    margin-bottom:25px;
+}
+
+.admin-section{
+    background:white;
+    padding:25px;
+    border-radius:20px;
+    margin-bottom:30px;
+    box-shadow:0 5px 20px rgba(238,77,45,0.08);
+}
+
+.admin-section h2{
+    color:#ee4d2d;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+.admin-table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+}
+
+.admin-table th{
+    background:#ee4d2d;
+    color:white;
+    padding:14px;
+    text-align:left;
+}
+
+.admin-table td{
+    padding:14px;
+    border-bottom:1px solid #eee;
+}
+
+.admin-table tr:hover{
+    background:#fff3ee;
+}
+
+.admin-delete-btn{
+    background:#ff4d4f;
+    color:white;
+    padding:8px 14px;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:bold;
+    margin-right:6px;
+}
+
+.admin-view-btn{
+    background:#ff9800;
+    color:white;
+    padding:8px 14px;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:bold;
+    margin-right:6px;
+}
+
+.review-box{
+    background:white;
+    padding:25px;
+    border-radius:20px;
+    margin-top:30px;
+    box-shadow:0 5px 20px rgba(238,77,45,0.08);
+}
+
+.review-box h3{
+    color:#ee4d2d;
+    font-weight:bold;
+    margin-bottom:20px;
+}
+
+.review-form{
+    background:#fff7f3;
+    padding:20px;
+    border-radius:16px;
+    margin-bottom:20px;
+}
+
+.review-card{
+    background:#f8f8f8;
+    padding:18px;
+    border-radius:16px;
+    margin-bottom:15px;
+}
+
+.review-stars{
+    color:#ffb300;
+    font-size:26px;
+    font-weight:bold;
+    margin:8px 0;
+}
+
+.price-jump{
+    animation:priceJump 0.6s ease;
+}
+
+@keyframes priceJump{
+    0%{
+        transform:scale(1);
+    }
+
+    40%{
+        transform:scale(1.35);
+        color:#ff0033;
+        text-shadow:0 0 20px rgba(255,0,0,0.5);
+    }
+
+    100%{
+        transform:scale(1);
+    }
+}
+
+.confetti{
+    position:fixed;
+    top:-20px;
+    width:12px;
+    height:18px;
+    background:#ffb300;
+    z-index:99999;
+    animation:confettiFall linear forwards;
+}
+
+.confetti:nth-child(3n){
+    background:#ee4d2d;
+}
+
+.confetti:nth-child(4n){
+    background:#28c76f;
+}
+
+.confetti:nth-child(5n){
+    background:#7367f0;
+}
+
+@keyframes confettiFall{
+    from{
+        transform:translateY(0) rotate(0deg);
+    }
+
+    to{
+        transform:translateY(110vh) rotate(720deg);
+    }
+}
+
+.block-user-form{
+    display:inline-block;
+    margin-left:8px;
+}
+
+.theme-toggle-btn{
+    border:none;
+    background:white;
+    color:#ee4d2d;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    font-size:22px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.theme-toggle-btn:hover{
+    transform:scale(1.1) rotate(15deg);
+}
+
+/* 深色模式 */
+
+body.dark-mode{
+    background:#121212;
+    color:#f1f1f1;
+}
+
+body.dark-mode .product-card,
+body.dark-mode .sidebar,
+body.dark-mode .form-box,
+body.dark-mode .chat-box,
+body.dark-mode .admin-section,
+body.dark-mode .notification-card,
+body.dark-mode .review-box,
+body.dark-mode .hero-banner{
+    background:#1e1e1e;
+    color:#f1f1f1;
+}
+
+body.dark-mode .chat-messages,
+body.dark-mode .review-card,
+body.dark-mode .sidebar-btn,
+body.dark-mode .category-choice{
+    background:#2a2a2a;
+    color:#f1f1f1;
+}
+
+body.dark-mode .chat-message,
+body.dark-mode .bid-box{
+    background:#2a2a2a;
+    color:#f1f1f1;
+}
+
+body.dark-mode .form-control,
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select{
+    background:#2a2a2a;
+    color:white;
+    border-color:#555;
+}
+
+body.dark-mode .form-control::placeholder,
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder{
+    color:#aaa;
+}
+
+body.dark-mode .category,
+body.dark-mode small,
+body.dark-mode .text-muted{
+    color:#bbb !important;
+}
+
+body.dark-mode .admin-table{
+    background:#1e1e1e;
+    color:#f1f1f1;
+}
+
+body.dark-mode .admin-table td{
+    border-bottom:1px solid #333;
+}
+
+body.dark-mode .admin-table tr:hover{
+    background:#2a2a2a;
+}
+
+body.dark-mode .theme-toggle-btn{
+    background:#2a2a2a;
+    color:#ffd700;
+}
+
+.auto-bid-box{
+    background:linear-gradient(
+        135deg,
+        #7367f0,
+        #5b4df5
+    );
+
+    padding:22px;
+
+    border-radius:20px;
+
+    margin-top:20px;
+
+    color:white;
+
+    box-shadow:0 8px 25px rgba(115,103,240,0.35);
+}
+
+.auto-bid-title{
+    font-size:24px;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.auto-bid-text{
+    opacity:0.9;
+    margin-bottom:16px;
+}
+
+.auto-bid-form .form-control{
+    height:50px;
+    border:none;
+}
+
+.auto-bid-form .btn{
+    font-weight:bold;
+    padding:0 24px;
+}
+
+.auto-bid-form{
+    background:#f7f7ff;
+    padding:20px;
+    border-radius:18px;
+    margin-top:20px;
+    border-left:6px solid #7367f0;
+}
+.live-page{
+    padding:20px;
+}
+
+.live-header{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.live-header h1{
+    color:#ee4d2d;
+    font-weight:bold;
+}
+
+.live-badge{
+    background:red;
+    color:white;
+    padding:8px 18px;
+    border-radius:999px;
+    font-weight:bold;
+    animation:livePulse 1s infinite alternate;
+}
+
+.live-layout{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:25px;
+}
+
+.live-main,
+.live-side{
+    background:white;
+    padding:25px;
+    border-radius:25px;
+    box-shadow:0 5px 20px rgba(238,77,45,0.08);
+}
+
+.live-host-box{
+    display:flex;
+    align-items:center;
+    gap:20px;
+    background:linear-gradient(45deg,#ee4d2d,#ff7337);
+    color:white;
+    padding:25px;
+    border-radius:20px;
+    margin-bottom:25px;
+}
+
+.host-avatar{
+    width:80px;
+    height:80px;
+    background:white;
+    color:#ee4d2d;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:42px;
+}
+
+.live-carousel{
+    position:relative;
+    min-height:460px;
+}
+
+.live-product-card{
+    display:none;
+    animation:liveFade 0.6s ease;
+}
+
+.live-product-card.active{
+    display:block;
+}
+
+.live-product-image{
+    width:100%;
+    height:320px;
+    object-fit:cover;
+    border-radius:20px;
+}
+
+.live-product-info{
+    margin-top:18px;
+}
+
+.live-product-info h3{
+    color:#ee4d2d;
+    font-size:36px;
+    font-weight:bold;
+}
+
+.live-messages{
+    height:430px;
+    overflow-y:auto;
+    background:#f7f7f7;
+    padding:15px;
+    border-radius:15px;
+    margin-bottom:15px;
+}
+
+.live-message{
+    background:white;
+    padding:12px;
+    border-radius:12px;
+    margin-bottom:10px;
+}
+
+.live-message small{
+    display:block;
+    color:#999;
+    margin-top:5px;
+}
+
+.live-chat-input{
+    display:flex;
+    gap:10px;
+}
+
+.live-chat-input input{
+    flex:1;
+}
+
+@keyframes livePulse{
+    from{
+        transform:scale(1);
+        opacity:0.75;
+    }
+
+    to{
+        transform:scale(1.1);
+        opacity:1;
+    }
+}
+
+@keyframes liveFade{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@media(max-width:900px){
+    .live-layout{
+        grid-template-columns:1fr;
+    }
+}
+
+.favorite-btn{
+    display:inline-block;
+    background:#ffedf1;
+    color:#ff3d68;
+    padding:10px 18px;
+    border-radius:999px;
+    text-decoration:none;
+    font-weight:bold;
+    margin-bottom:15px;
+}
+
+.favorite-btn:hover{
+    background:#ff3d68;
+    color:white;
+}
+
+.favorite-count{
+    color:#ff3d68;
+    font-weight:bold;
+}
+
+.profile-box{
+
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+
+}
+
+.profile-avatar{
+
+    transition:0.3s;
+
+}
+
+.profile-avatar:hover{
+
+    transform:scale(1.05);
+
+}
+
+.profile-header{
+
+    padding:20px;
+
+}
+
+.badge{
+
+    font-size:15px;
+
+}
+
+.message-list{
+    max-width:800px;
+    margin:auto;
+}
+
+.message-card{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    padding:18px;
+    margin-bottom:15px;
+    background:white;
+    border-radius:18px;
+    text-decoration:none;
+    color:#333;
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+    position:relative;
+}
+
+.message-card:hover{
+    transform:translateY(-2px);
+    transition:0.2s;
+}
+
+.message-avatar{
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    background:#ff7043;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:25px;
+}
+
+.message-info{
+    flex:1;
+}
+
+.message-top{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:6px;
+}
+
+.message-preview{
+    color:#777;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.message-unread{
+    background:red;
+    color:white;
+    border-radius:50%;
+    min-width:26px;
+    height:26px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.meet-select{
+    width:100%;
+    padding:14px;
+    border-radius:14px;
+    border:2px solid #ff7043;
+    background:white;
+    font-size:16px;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+.meet-select:focus{
+    border-color:#ff5722;
+    box-shadow:0 0 10px rgba(255,87,34,0.25);
+    outline:none;
+}
+
+/* ===== 右上角頭像個人選單 ===== */
+.user-dropdown{
+    position:relative;
+}
+
+.user-btn{
+    border:none;
+    background:white;
+    color:#ee4d2d;
+    padding:7px 13px;
+    border-radius:999px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.2s;
+    white-space:nowrap;
+}
+
+.user-btn:hover{
+    transform:scale(1.04);
+    box-shadow:0 4px 12px rgba(0,0,0,0.12);
+}
+
+.nav-avatar{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid #ee4d2d;
+    background:white;
+}
+
+.user-arrow{
+    font-size:14px;
+}
+
+.user-menu{
+    position:absolute;
+    top:58px;
+    right:0;
+    width:245px;
+    background:white;
+    border-radius:18px;
+    padding:12px;
+    display:none;
+    z-index:99999;
+    box-shadow:0 10px 30px rgba(0,0,0,0.18);
+}
+
+.user-menu.show{
+    display:block;
+    animation:userMenuFade 0.2s ease;
+}
+
+.user-menu a{
+    display:block;
+    padding:12px 14px;
+    border-radius:12px;
+    text-decoration:none;
+    color:#333;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+.user-menu a:hover{
+    background:#fff3ee;
+    color:#ee4d2d;
+}
+
+.user-menu hr{
+    margin:8px 0;
+    border:none;
+    border-top:1px solid #eee;
+}
+
+.menu-logout{
+    color:#ff0033 !important;
+}
+
+.notification-link{
+    position:relative;
+}
+
+.notification-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:20px;
+    height:20px;
+    margin-left:4px;
+    padding:0 6px;
+    border-radius:999px;
+    background:red;
+    color:white;
+    font-size:12px;
+    font-weight:bold;
+}
+
+@keyframes userMenuFade{
+    from{
+        opacity:0;
+        transform:translateY(-10px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+body.dark-mode .user-menu{
+    background:#1e1e1e;
+    color:#f1f1f1;
+}
+
+body.dark-mode .user-menu a{
+    color:#f1f1f1;
+}
+
+body.dark-mode .user-menu a:hover{
+    background:#2a2a2a;
+    color:#ff7337;
+}
+
+@media(max-width:768px){
+    .user-dropdown{
+        width:100%;
+    }
+
+    .user-btn{
+        width:100%;
+        justify-content:center;
+        border-radius:12px;
+    }
+
+    .user-menu{
+        position:static;
+        width:100%;
+        margin-top:8px;
+    }
+}
+
+/* ===== UI CLEAN PATCH ===== */
+
+body{
+background:#f7f8fa;
+}
+
+.container{
+max-width:1200px;
+}
+
+.product-card,
+.review-card,
+.chat-box,
+.notification-card,
+.message-card,
+.form-box,
+.card,
+.bid-box,
+.seller-info-box,
+.auto-bid-box,
+.winner-box{
+
+border-radius:18px !important;
+box-shadow:0 4px 14px rgba(0,0,0,.06) !important;
+border:1px solid #ececec;
+}
+
+.product-card:hover{
+transform:translateY(-2px);
+transition:.2s;
+}
+
+.product-image,
+.card-img-top,
+.main-product-image,
+.detail-image{
+
+border-radius:16px;
+object-fit:cover;
+
+}
+
+.product-title,
+.page-title,
+.form-title{
+
+font-weight:800;
+color:#222;
+
+}
+
+.price,
+.detail-price{
+
+color:#ff5a2a;
+font-weight:800;
+
+}
+
+.chat-message{
+
+box-shadow:none !important;
+border:1px solid #eee;
+background:white;
+
+}
+
+.bid-live-stage,
+.winner-alert,
+.latest-bid-alert{
+
+box-shadow:none !important;
+
+}
+
+hr{
+opacity:.08;
+}
+
+.btn-shopee{
+
+border-radius:12px;
+padding:10px 18px;
+
+}
+
+input,
+textarea,
+select{
+
+border-radius:12px !important;
+
+}
+
+.product-grid{
+
+gap:20px;
+
+}
+
+@media(max-width:768px){
+
+.product-grid{
+gap:12px;
+}
+
+}
+
+
+
+/* ===== 搜尋按鈕修正 ===== */
+
+.navbar-search button{
+
+    background:transparent !important;
+
+    border:none !important;
+
+    box-shadow:none !important;
+
+    color:white !important;
+
+    font-size:22px;
+
+    font-weight:800;
+
+    padding:0 12px !important;
+
+    border-radius:0 !important;
+
+    min-width:auto !important;
+
+}
+
+.navbar-search button:hover{
+
+    background:transparent !important;
+
+    transform:none !important;
+
+    opacity:.85;
+
+}
+
+.hero-main-title{
+    font-size:48px;
+    font-weight:900;
+    color:white;
+    margin:12px 0 20px;
+}
+
+.hero-feature-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    font-size:20px;
+    color:white;
+    margin-bottom:28px;
+}
+
+.hero-btn-group{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+}
+
+.hero-main-btn{
+    font-size:18px;
+    padding:12px 24px;
+}
+
+.hero-second-btn{
+    padding:12px 24px;
+}
+
+.hero-safe-text{
+    display:block;
+    color:rgba(255,255,255,0.9);
+    margin-top:10px;
+}
+
+@media(max-width:768px){
+
+    .hero-main-title{
+        font-size:34px;
+    }
+
+    .hero-feature-list{
+        font-size:16px;
+    }
+
+}
+
+
+/* ===== 首頁獎勵公告修正版：不遮擋 Hero 按鈕 ===== */
+
+.home-reward-section{
+    width:100%;
+    display:block;
+    clear:both;
+    position:static !important;
+    margin:26px 0 34px 0 !important;
+    padding:0 !important;
+    z-index:auto !important;
+}
+
+.home-reward-card{
+    position:static !important;
+    max-width:980px;
+    margin:0 auto !important;
+    padding:18px 22px !important;
+    border-radius:22px;
+    background:#fff3cd;
+    border:2px solid #ffb347;
+    box-shadow:0 8px 24px rgba(238,77,45,0.12);
+    text-align:center;
+    color:#5a3b00;
+}
+
+.home-reward-card h4{
+    margin:0 0 10px 0;
+    font-size:20px;
+    font-weight:900;
+}
+
+.home-reward-lines{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:18px;
+    flex-wrap:wrap;
+    font-size:15px;
+    line-height:1.7;
+}
+
+.hero-banner{
+    overflow:visible !important;
+    min-height:520px !important;
+    height:auto !important;
+    padding:46px 18px 54px !important;
+    margin-bottom:0 !important;
+}
+
+.hero-content{
+    width:100%;
+}
+
+.hero-btn-group{
+    position:relative !important;
+    z-index:5 !important;
+    margin-top:22px !important;
+    margin-bottom:18px !important;
+}
+
+@media(max-width:768px){
+    .hero-banner{
+        min-height:auto !important;
+        padding:34px 14px 42px !important;
+    }
+
+    .home-reward-section{
+        margin:18px 0 26px 0 !important;
+        padding:0 10px !important;
+    }
+
+    .home-reward-card{
+        padding:14px 12px !important;
+        border-radius:18px;
+    }
+
+    .home-reward-card h4{
+        font-size:16px;
+        line-height:1.45;
+    }
+
+    .home-reward-lines{
+        display:block;
+        font-size:13px;
+        line-height:1.8;
+    }
+}
+
+
+.video-box{
+
+    width:100%;
+
+    height:500px;
+
+    background:black;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    margin-bottom:20px;
+
+}
+
+#localVideo{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+
+}

@@ -1,0 +1,446 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="form-box">
+
+    <h2 class="form-title">
+        📦 上架商品
+    </h2>
+<!-- 放在 add_product.html 最上面 -->
+<div class="alert alert-warning shadow-sm mb-4" style="border-radius:18px;">
+    <h4>🎁 新手上架獎勵</h4>
+
+    <p><strong>首次成功上架商品，立即獲得 1000 金幣！</strong></p>
+
+    <div>✅ 每帳號限領一次</div>
+    <div>✅ 商品需保留上架至少 30 分鐘</div>
+    <div>✅ 違規或刪除商品不列入資格</div>
+
+    <hr>
+
+    <strong>🚀 完成上架後，系統將自動發放獎勵！</strong>
+</div>
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        <!-- 商品名稱 -->
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                商品名稱
+            </label>
+
+            <input
+                name="title"
+                class="form-control"
+                placeholder="請輸入商品名稱"
+                required
+            >
+
+        </div>
+
+        <!-- 起標價格 -->
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                起標價格
+            </label>
+
+            <input
+                name="price"
+                type="number"
+                class="form-control"
+                placeholder="請輸入起標價格"
+                required
+            >
+
+        </div>
+
+        <!-- 商品圖片 -->
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                商品圖片（最多 5 張）
+            </label>
+
+            <input
+                name="image"
+                type="file"
+                class="form-control mb-2"
+                accept="image/*"
+                required
+            >
+
+            <input
+                name="image2"
+                type="file"
+                class="form-control mb-2"
+                accept="image/*"
+            >
+
+            <input
+                name="image3"
+                type="file"
+                class="form-control mb-2"
+                accept="image/*"
+            >
+
+            <input
+                name="image4"
+                type="file"
+                class="form-control mb-2"
+                accept="image/*"
+            >
+
+            <input
+                name="image5"
+                type="file"
+                class="form-control"
+                accept="image/*"
+            >
+
+            <small class="text-muted">
+                第一張會作為商品主圖，其他圖片會在商品頁顯示為縮圖。
+            </small>
+
+        </div>
+
+        <!-- 商品分類 -->
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                商品分類
+            </label>
+
+            <input
+                type="hidden"
+                name="category"
+                id="categoryInput"
+                required
+            >
+
+            <div class="category-choice-box">
+
+                {% for c in ["生活用品", "食品", "電器用品", "服飾", "書籍", "3C", "手機", "電腦", "遊戲", "動漫", "美妝", "運動", "機車", "家具", "精品", "票券"] %}
+
+                    <button
+                        type="button"
+                        class="category-choice"
+                        onclick="selectCategory(this, '{{ c }}')"
+                    >
+                        {{ c }}
+                    </button>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        <!-- 商品狀態 -->
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                商品狀態
+            </label>
+
+            <select
+                name="condition"
+                class="form-control"
+                required
+            >
+                <option value="全新">全新</option>
+                <option value="九成新">九成新</option>
+                <option value="二手" selected>二手</option>
+                <option value="故障品">故障品</option>
+            </select>
+
+        </div>
+
+
+        <!-- 交易規格 -->
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    🤝 交易方式
+                </label>
+
+                <select
+                    name="trade_method"
+                    class="form-control"
+                    required
+                >
+                    <option value="面交" selected>面交</option>
+                    <option value="寄送">寄送</option>
+                    <option value="面交 / 寄送皆可">面交 / 寄送皆可</option>
+                </select>
+
+            </div>
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    💳 付款方式
+                </label>
+
+                <select
+                    name="payment_method"
+                    class="form-control"
+                    required
+                >
+                    <option value="現金" selected>現金</option>
+                    <option value="匯款">匯款</option>
+                    <option value="現金 / 匯款皆可">現金 / 匯款皆可</option>
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                🕒 面交時段
+            </label>
+
+            <select
+                name="meetup_time"
+                class="form-control"
+                required
+            >
+                <option value="平日中午">平日中午</option>
+                <option value="平日晚上" selected>平日晚上</option>
+                <option value="假日">假日</option>
+                <option value="皆可">皆可</option>
+            </select>
+
+        </div>
+
+        <!-- 面交地點 -->
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                🗺️ 面交地點
+            </label>
+
+            <select
+                name="meet_location"
+                class="form-control"
+                required
+            >
+
+                <option value="">
+                    請選擇面交地點
+                </option>
+
+                <option value="青永館">
+                    📍 青永館
+                </option>
+
+                <option value="圖書館">
+                    📍 圖書館
+                </option>
+
+                <option value="學舍">
+                    📍 學舍
+                </option>
+
+                <option value="操場">
+                    📍 操場
+                </option>
+
+                <option value="校門口">
+                    📍 校門口
+                </option>
+
+                <option value="工程館">
+                    📍 工程館
+                </option>
+
+                <option value="管理館">
+                    📍 管理館
+                </option>
+
+                <option value="國秀樓">
+                    📍 國秀樓
+                </option>
+
+            </select>
+
+        </div>
+
+        <!-- 競標時間 -->
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                競標時間（小時）
+            </label>
+
+            <input
+                name="hours"
+                type="number"
+                class="form-control"
+                placeholder="例如：24"
+                required
+            >
+
+        </div>
+
+        <!-- 商品描述 -->
+
+        <div class="mb-4">
+
+            <label class="form-label">
+                商品描述
+            </label>
+
+            <textarea
+                name="description"
+                class="form-control"
+                rows="5"
+                placeholder="請輸入商品描述"
+            ></textarea>
+
+        </div>
+
+        <!-- 送出 -->
+
+        <button class="btn btn-shopee w-100">
+            🚀 送出商品
+        </button>
+
+    </form>
+
+</div>
+
+<script>
+
+function selectCategory(button, category){
+
+    document.getElementById("categoryInput").value = category;
+
+    document.querySelectorAll(".category-choice").forEach(btn => {
+        btn.classList.remove("active");
+    });
+
+    button.classList.add("active");
+
+}
+
+</script>
+
+<script>
+
+const titleInput =
+    document.querySelector("input[name='title']");
+
+const categoryInput =
+    document.getElementById("categoryInput");
+
+const categoryRules = {
+
+    "3C": [
+        "iphone",
+        "手機",
+        "平板",
+        "ipad",
+        "電腦",
+        "筆電",
+        "耳機",
+        "充電器"
+    ],
+
+    "電器用品": [
+        "電風扇",
+        "風扇",
+        "吹風機",
+        "檯燈",
+        "電鍋",
+        "延長線"
+    ],
+
+    "書籍": [
+        "書",
+        "課本",
+        "小說",
+        "講義",
+        "雜誌"
+    ],
+
+    "服飾": [
+        "衣服",
+        "外套",
+        "褲子",
+        "鞋子",
+        "帽子"
+    ],
+
+    "食品": [
+        "餅乾",
+        "飲料",
+        "泡麵",
+        "零食"
+    ],
+
+    "生活用品": [
+        "水壺",
+        "椅子",
+        "桌子",
+        "收納",
+        "雨傘"
+    ]
+
+};
+
+titleInput.addEventListener("input", function(){
+
+    const text =
+        titleInput.value.toLowerCase();
+
+    for(const category in categoryRules){
+
+        for(const keyword of categoryRules[category]){
+
+            if(text.includes(keyword.toLowerCase())){
+
+                categoryInput.value = category;
+
+                document.querySelectorAll(".category-choice")
+                .forEach(btn => {
+
+                    btn.classList.remove("active");
+
+                    if(btn.innerText.trim() === category){
+
+                        btn.classList.add("active");
+
+                    }
+
+                });
+
+                return;
+
+            }
+
+        }
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

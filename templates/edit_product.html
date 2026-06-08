@@ -1,0 +1,280 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="form-box">
+
+    <h2 class="form-title">
+        ✏️ 編輯商品
+    </h2>
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                商品名稱
+            </label>
+
+            <input
+                name="title"
+                class="form-control"
+                value="{{ product.title }}"
+                required
+            >
+
+        </div>
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                目前圖片
+            </label>
+
+            <br>
+
+            <img
+                src="{{ product.image }}"
+                style="width:180px;border-radius:15px;margin-bottom:15px;"
+            >
+
+            <input
+                name="image"
+                type="file"
+                class="form-control"
+            >
+
+            <small class="text-muted">
+                不選新圖片就保留原本圖片
+            </small>
+
+        </div>
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                商品分類
+            </label>
+
+            <select
+                name="category"
+                class="form-control"
+                required
+            >
+
+                {% set categories = [
+                    "生活用品",
+                    "食品",
+                    "電器用品",
+                    "服飾",
+                    "書籍",
+                    "3C",
+                    "手機",
+                    "電腦",
+                    "遊戲",
+                    "動漫",
+                    "美妝",
+                    "運動",
+                    "機車",
+                    "家具",
+                    "精品",
+                    "票券"
+                ] %}
+
+                {% for c in categories %}
+
+                    <option
+                        value="{{ c }}"
+                        {% if product.category == c %}selected{% endif %}
+                    >
+                        {{ c }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                商品狀況
+            </label>
+
+            <select
+                name="condition"
+                class="form-control"
+                required
+            >
+
+                {% for c in ["全新", "九成新", "二手", "故障品"] %}
+
+                    <option
+                        value="{{ c }}"
+                        {% if (product.condition or "二手") == c %}selected{% endif %}
+                    >
+                        {{ c }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    🤝 交易方式
+                </label>
+
+                <select
+                    name="trade_method"
+                    class="form-control"
+                    required
+                >
+
+                    {% for m in ["面交", "寄送", "面交 / 寄送皆可"] %}
+
+                        <option
+                            value="{{ m }}"
+                            {% if (product.trade_method or "面交") == m %}selected{% endif %}
+                        >
+                            {{ m }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    💳 付款方式
+                </label>
+
+                <select
+                    name="payment_method"
+                    class="form-control"
+                    required
+                >
+
+                    {% for p in ["現金", "匯款", "現金 / 匯款皆可"] %}
+
+                        <option
+                            value="{{ p }}"
+                            {% if (product.payment_method or "現金") == p %}selected{% endif %}
+                        >
+                            {{ p }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                🕒 面交時段
+            </label>
+
+            <select
+                name="meetup_time"
+                class="form-control"
+                required
+            >
+
+                {% for t in ["平日中午", "平日晚上", "假日", "皆可"] %}
+
+                    <option
+                        value="{{ t }}"
+                        {% if (product.meetup_time or "平日晚上") == t %}selected{% endif %}
+                    >
+                        {{ t }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                🗺️ 面交地點
+            </label>
+
+            <select
+                name="meet_location"
+                class="form-control"
+                required
+            >
+
+                {% set locations = ["青永館", "圖書館", "學舍", "操場", "校門口", "工程館", "管理館", "國秀樓"] %}
+
+                {% for l in locations %}
+
+                    <option
+                        value="{{ l }}"
+                        {% if product.meet_location == l %}selected{% endif %}
+                    >
+                        📍 {{ l }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                重新設定競標時間（小時）
+            </label>
+
+            <input
+                name="hours"
+                type="number"
+                class="form-control"
+                placeholder="例如：24"
+                required
+            >
+
+        </div>
+
+        <div class="mb-4">
+
+            <label class="form-label">
+                商品描述
+            </label>
+
+            <textarea
+                name="description"
+                class="form-control"
+                rows="5"
+            >{{ product.description }}</textarea>
+
+        </div>
+
+        <button class="btn btn-shopee w-100">
+            儲存修改
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

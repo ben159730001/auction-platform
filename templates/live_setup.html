@@ -1,0 +1,162 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>
+    🎥 直播準備室
+</h2>
+
+<h4>
+    {{ product.title }}
+</h4>
+
+<hr>
+
+<video
+    id="previewVideo"
+    autoplay
+    muted
+    playsinline
+    style="
+        width:800px;
+        max-width:100%;
+        background:black;
+    "
+></video>
+
+<br><br>
+
+<button
+    class="btn btn-success"
+    onclick="toggleCamera()"
+>
+    📹 開關鏡頭
+</button>
+
+<button
+    class="btn btn-warning"
+    onclick="toggleMic()"
+>
+    🎤 開關麥克風
+</button>
+
+<button
+    class="btn btn-info"
+    onclick="shareScreen()"
+>
+    🖥 分享畫面
+</button>
+
+<button
+    class="btn btn-danger"
+    onclick="stopShare()"
+>
+    ❌ 停止分享
+</button>
+
+<hr>
+
+<a
+    href="/start_live/{{ product.id }}"
+    class="btn btn-lg btn-danger"
+>
+    🔴 開始直播
+</a>
+
+<script>
+
+let stream = null;
+
+async function toggleCamera(){
+
+    try{
+
+        if(!stream){
+
+            stream =
+                await navigator.mediaDevices.getUserMedia({
+                    video:true,
+                    audio:true
+                });
+
+            document
+                .getElementById("previewVideo")
+                .srcObject = stream;
+
+        }
+        else{
+
+            stream
+            .getVideoTracks()
+            .forEach(track=>{
+
+                track.enabled =
+                    !track.enabled;
+
+            });
+
+        }
+
+    }
+    catch(err){
+
+        alert(err);
+
+    }
+
+}
+
+async function toggleMic(){
+
+    if(!stream)
+        return;
+
+    stream
+    .getAudioTracks()
+    .forEach(track=>{
+
+        track.enabled =
+            !track.enabled;
+
+    });
+
+}
+
+async function shareScreen(){
+
+    try{
+
+        const screenStream =
+            await navigator.mediaDevices.getDisplayMedia({
+                video:true
+            });
+
+        stream = screenStream;
+
+        document
+            .getElementById("previewVideo")
+            .srcObject = screenStream;
+
+    }
+    catch(err){
+
+        alert(err);
+
+    }
+
+}
+
+function stopShare(){
+
+    if(!stream)
+        return;
+
+    stream
+    .getTracks()
+    .forEach(track=>track.stop());
+
+}
+
+</script>
+
+{% endblock %}

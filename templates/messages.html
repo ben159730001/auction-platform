@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h1 class="page-title">
+    💬 我的私訊
+</h1>
+
+<div class="message-list">
+
+    {% for chat in chats %}
+
+        <a
+            href="/messages/{{ chat.other_user_id }}"
+            class="message-card"
+        >
+
+            <div class="message-avatar">
+                👤
+            </div>
+
+            <div class="message-info">
+
+                <div class="message-top">
+
+                    <strong>
+                        {{ chat.other_username }}
+                    </strong>
+
+                    <small>
+                        {{ chat.last_time }}
+                    </small>
+
+                </div>
+
+                <div class="message-preview">
+
+                    {% if chat.last_message %}
+                        {{ chat.last_message }}
+                    {% elif chat.last_image %}
+                        📷 傳送了一張圖片
+                    {% else %}
+                        尚無訊息
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            {% if chat.unread_count > 0 %}
+
+                <span class="message-unread">
+                    {{ chat.unread_count }}
+                </span>
+
+            {% endif %}
+
+        </a>
+
+    {% else %}
+
+        <p class="text-muted">
+            目前沒有私訊紀錄。
+        </p>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<style>
+.private-chat-page{
+    max-width:900px;
+    margin:0 auto;
+}
+.private-chat-title{
+    font-size:28px;
+    font-weight:800;
+    margin-bottom:16px;
+}
+.chat-box{
+    background:#f8f9fa;
+    border-radius:18px;
+    padding:16px;
+    min-height:360px;
+    max-height:65vh;
+    overflow-y:auto;
+}
+.chat-message{
+    background:white;
+    border-radius:16px;
+    padding:10px 13px;
+    margin-bottom:12px;
+    max-width:72%;
+    box-shadow:0 3px 10px rgba(0,0,0,0.06);
+}
+.my-message{
+    margin-left:auto;
+    background:#fff3ee;
+    border:1px solid #ffd4c2;
+}
+.chat-meta{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    color:#777;
+    font-size:12px;
+    margin-top:5px;
+}
+.read-status{
+    font-weight:700;
+}
+.read-status.read{
+    color:#198754;
+}
+.read-status.sent{
+    color:#777;
+}
+.chat-form{
+    background:white;
+    border-radius:18px;
+    padding:12px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.08);
+}
+@media (max-width:768px){
+    .private-chat-title{
+        font-size:22px;
+    }
+    .chat-box{
+        max-height:58vh;
+        min-height:360px;
+        padding:10px;
+    }
+    .chat-message{
+        max-width:88%;
+        font-size:15px;
+    }
+    .chat-form textarea{
+        min-height:90px;
+        font-size:16px;
+    }
+    .chat-form button{
+        width:100%;
+    }
+}
+</style>
+
+<div class="private-chat-page">
+
+    <h2 class="private-chat-title">💬 與 {{ receiver.username }} 私訊</h2>
+
+    {% if product %}
+    <div class="card p-3 mb-3">
+        <strong>關於商品：</strong>
+        {{ product.title }}
+        <br>
+        <a href="/product/{{ product.id }}">查看商品</a>
+    </div>
+    {% endif %}
+
+    <div class="chat-box" id="chatBox">
+
+        {% for m in messages %}
+            <div class="chat-message {% if m.sender_id == session.get('user_id') %}my-message{% endif %}">
+
+                <strong>{{ m.sender_name }}</strong>
+
+                {% if m.message %}
+                    <p class="mb-1">{{ m.message }}</p>
+                {% endif %}
+
+                {% if m.image %}
+                    <img src="{{ m.image }}" style="max-width:220px;border-radius:12px;">
+                {% endif %}
+
+                <div class="chat-meta">
+                    <span>🕒 {{ m.created_at }}</span>
+
+                    {% if m.sender_id == session.get("user_id") %}
+                        {% if m.is_read == 1 %}
+                            <span class="read-status read">✔✔ 已讀</span>
+                        {% else %}
+                            <span class="read-status sent">✔ 已送出</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+            </div>
+        {% endfor %}
+
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="chat-form mt-3">
+
+        <textarea
+            name="message"
+            class="form-control"
+            placeholder="輸入私訊內容..."
+        ></textarea>
+
+        <input
+            type="file"
+            name="image"
+            class="form-control mt-2"
+        >
+
+        <button class="btn btn-shopee mt-2">
+            送出
+        </button>
+
+    </form>
+
+</div>
+
+<script>
+window.addEventListener("load", function(){
+    const box = document.getElementById("chatBox");
+    if(box){
+        box.scrollTop = box.scrollHeight;
+    }
+});
+</script>
+
+{% endblock %}

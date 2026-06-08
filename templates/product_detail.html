@@ -1,0 +1,1632 @@
+{% extends "layout.html" %}
+{% block content %}
+
+{% set is_completed = product.is_completed|default(0)|int %}
+{% set is_paused = product.is_paused|default(0)|int %}
+{% set product_views = product.views|default(0)|int %}
+{% set product_price = product.current_price|default(0)|int %}
+{% set product_condition = product.condition|default("二手") %}
+{% set is_ended = is_ended|default(false) %}
+
+<style>
+.campus-map-box{
+    margin-top:20px;
+    padding:20px;
+    background:white;
+    border-radius:18px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+}
+
+.campus-map{
+    position:relative;
+    height:300px;
+    border-radius:18px;
+    background:linear-gradient(135deg,#e8f5e9,#e3f2fd);
+    border:3px solid #90caf9;
+    overflow:hidden;
+}
+
+.map-point{
+    position:absolute;
+    padding:8px 12px;
+    background:white;
+    border-radius:20px;
+    font-weight:bold;
+    box-shadow:0 3px 10px rgba(0,0,0,0.15);
+    transition:0.2s;
+}
+
+.map-point.active{
+    background:#ff5722;
+    color:white;
+    transform:scale(1.15);
+    box-shadow:0 0 18px rgba(255,87,34,0.8);
+}
+
+.building{
+    top:18%;
+    left:20%;
+}
+
+.library{
+    top:34%;
+    left:43%;
+}
+
+.dorm{
+    top:65%;
+    left:18%;
+}
+
+.field{
+    top:58%;
+    left:65%;
+}
+
+.gate{
+    top:80%;
+    left:43%;
+}
+
+.engineering{
+    top:18%;
+    left:60%;
+}
+
+.management{
+    top:42%;
+    left:73%;
+}
+
+.guoxiu{
+    top:70%;
+    left:55%;
+}
+
+
+/* ===== 即時競標動畫 ===== */
+.bid-live-stage{
+    position:relative;
+    margin:18px 0;
+    padding:18px;
+    border-radius:22px;
+    background:linear-gradient(135deg,#fff7ed,#fff1f2);
+    border:2px solid rgba(255,87,34,0.18);
+    overflow:hidden;
+}
+
+.bid-live-stage::before{
+    content:"LIVE BID";
+    position:absolute;
+    top:10px;
+    right:14px;
+    font-size:12px;
+    font-weight:900;
+    color:#ff5722;
+    letter-spacing:1.5px;
+}
+
+.detail-price.price-jump{
+    animation: priceJump 0.75s ease-in-out;
+}
+
+@keyframes priceJump{
+    0%{ transform:scale(1); text-shadow:none; }
+    35%{ transform:scale(1.24) rotate(-1deg); text-shadow:0 0 22px rgba(255,87,34,0.75); }
+    70%{ transform:scale(0.96) rotate(1deg); }
+    100%{ transform:scale(1); text-shadow:none; }
+}
+
+.bid-shockwave{
+    animation: bidShockwave 0.9s ease-out;
+}
+
+@keyframes bidShockwave{
+    0%{ box-shadow:0 0 0 0 rgba(255,87,34,0.75); }
+    100%{ box-shadow:0 0 0 28px rgba(255,87,34,0); }
+}
+
+.latest-bid-alert{
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-top:12px;
+    padding:12px 14px;
+    border-radius:16px;
+    background:#111827;
+    color:white;
+    font-weight:800;
+}
+
+.latest-bid-alert.show{
+    display:flex;
+    animation: slidePop 0.45s ease-out;
+}
+
+@keyframes slidePop{
+    from{ transform:translateY(12px); opacity:0; }
+    to{ transform:translateY(0); opacity:1; }
+}
+
+.crown-badge{
+    display:inline-block;
+    margin-left:8px;
+    padding:4px 10px;
+    border-radius:999px;
+    background:linear-gradient(135deg,#fbbf24,#f97316);
+    color:white;
+    font-size:13px;
+    font-weight:900;
+    animation:crownPulse 1.15s infinite;
+}
+
+@keyframes crownPulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.12); }
+}
+
+.bid-box.new-bid-flash{
+    animation:newBidFlash 1.1s ease-out;
+}
+
+@keyframes newBidFlash{
+    0%{ background:#fff7ed; transform:translateX(-8px); }
+    60%{ background:#ffffff; transform:translateX(0); }
+    100%{ background:transparent; }
+}
+
+.confetti{
+    position:fixed;
+    top:-12px;
+    width:9px;
+    height:14px;
+    border-radius:3px;
+    background:currentColor;
+    color:#ff5722;
+    z-index:9999;
+    pointer-events:none;
+    animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall{
+    to{ transform:translateY(110vh) rotate(720deg); opacity:0; }
+}
+
+
+.product-gallery{
+    width:100%;
+}
+.main-product-image{
+    width:100%;
+    border-radius:18px;
+    object-fit:cover;
+    max-height:430px;
+}
+.thumb-list{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    margin-top:12px;
+    padding-bottom:6px;
+}
+.thumb-image{
+    width:74px;
+    height:74px;
+    object-fit:cover;
+    border-radius:12px;
+    border:3px solid transparent;
+    cursor:pointer;
+    flex:0 0 auto;
+}
+.thumb-image.active{
+    border-color:#ff5722;
+}
+.product-status-badges{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin:12px 0;
+}
+.product-status-badge{
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:800;
+}
+.condition-badge{ background:#e0f2fe; color:#0369a1; }
+.hot-badge{ background:#fee2e2; color:#b91c1c; }
+.ending-badge{ background:#fef3c7; color:#92400e; }
+.premium-badge{ background:#ede9fe; color:#5b21b6; }
+.reaction-bar{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:8px;
+}
+.reaction-btn{
+    border:1px solid #eee;
+    background:white;
+    border-radius:999px;
+    padding:4px 9px;
+    font-size:13px;
+    cursor:pointer;
+}
+.reaction-btn:hover{
+    background:#fff3ee;
+}
+.seller-info-box{
+    padding:12px 14px;
+    border-radius:16px;
+    background:#fff7ed;
+    border:1px solid #ffd7c2;
+}
+
+@media (max-width:768px){
+    .main-product-image{
+        max-height:360px;
+    }
+    .thumb-image{
+        width:64px;
+        height:64px;
+    }
+}
+
+
+.product-spec-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    margin:18px 0;
+}
+
+.spec-item{
+    background:#fafafa;
+    border:1px solid #eeeeee;
+    border-radius:14px;
+    padding:14px 16px;
+    color:#666;
+    font-weight:700;
+}
+
+.spec-item strong{
+    display:block;
+    margin-top:5px;
+    color:#ff5722;
+    font-size:17px;
+}
+
+@media (max-width:768px){
+    .product-spec-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+</style>
+
+<hr>
+
+<div class="review-box">
+
+    <h3>⭐ 交易評價</h3>
+
+    {% if winner and is_completed == 1 %}
+
+        {% if session.get("user_id") == winner["user_id"] %}
+
+            <form
+                method="POST"
+                action="/review/{{ product.id }}"
+                class="review-form"
+            >
+
+                <input
+                    type="hidden"
+                    name="target_user_id"
+                    value="{{ product.user_id }}"
+                >
+
+                <label>買家評價賣家</label>
+
+                <select name="rating" class="form-control" required>
+                    <option value="5">★★★★★</option>
+                    <option value="4">★★★★</option>
+                    <option value="3">★★★</option>
+                    <option value="2">★★</option>
+                    <option value="1">★</option>
+                </select>
+
+                <textarea
+                    name="comment"
+                    class="form-control mt-2"
+                    placeholder="例如：出貨快速"
+                    required
+                ></textarea>
+
+                <button class="btn btn-shopee mt-2">
+                    送出評價
+                </button>
+
+            </form>
+
+        {% endif %}
+
+        {% if session.get("user_id") == product.user_id %}
+
+            <form
+                method="POST"
+                action="/review/{{ product.id }}"
+                class="review-form"
+            >
+
+                <input
+                    type="hidden"
+                    name="target_user_id"
+                    value='{{ winner["user_id"] }}'
+                >
+
+                <label>賣家評價買家</label>
+
+                <select name="rating" class="form-control" required>
+                    <option value="5">★★★★★</option>
+                    <option value="4">★★★★</option>
+                    <option value="3">★★★</option>
+                    <option value="2">★★</option>
+                    <option value="1">★</option>
+                </select>
+
+                <textarea
+                    name="comment"
+                    class="form-control mt-2"
+                    placeholder="例如：準時付款"
+                    required
+                ></textarea>
+
+                <button class="btn btn-shopee mt-2">
+                    送出評價
+                </button>
+
+            </form>
+
+        {% endif %}
+
+    {% else %}
+
+        <p class="text-muted">
+            必須由賣家按下「完成交易」後，買賣雙方才可以互相評價。
+        </p>
+
+    {% endif %}
+
+    {% for r in reviews %}
+
+        <div class="review-card">
+
+            <strong>{{ r.reviewer_name }}</strong>
+            評價
+            <strong>{{ r.target_name }}</strong>
+
+            <div class="review-stars">
+                {% for i in range(r.rating) %}★{% endfor %}
+            </div>
+
+            <p>{{ r.comment }}</p>
+
+            <small>{{ r.created_at }}</small>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+{% if winner_message %}
+
+    <div class="winner-alert">
+        {{ winner_message }}
+    </div>
+
+{% endif %}
+
+<div class="row">
+
+    <div class="col-md-5">
+
+        {% set gallery_images = product_images if product_images is defined and product_images else [product.image or "/static/default-product.png"] %}
+
+        <div class="product-gallery">
+
+            <img
+                id="mainProductImage"
+                src="{{ gallery_images[0] }}"
+                class="detail-image main-product-image"
+                loading="lazy"
+            >
+
+            {% if gallery_images and gallery_images|length > 1 %}
+                <div class="thumb-list">
+                    {% for img in gallery_images %}
+                        <img
+                            src="{{ img }}"
+                            class="thumb-image {% if loop.first %}active{% endif %}"
+                            data-image="{{ img }}"
+                            onclick="changeMainImage(this, this.dataset.image)"
+                            loading="lazy"
+                        >
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="col-md-7">
+
+        <h1>{{ product.title }}</h1>
+
+        <div class="product-status-badges">
+
+            <span class="product-status-badge condition-badge">
+                {{ product_condition }}
+            </span>
+
+            {% if product_views >= 50 %}
+                <span class="product-status-badge hot-badge">
+                    🔥 熱門
+                </span>
+            {% endif %}
+
+            {% if product_price >= 10000 %}
+                <span class="product-status-badge premium-badge">
+                    💎 高價商品
+                </span>
+            {% endif %}
+
+            <span class="product-status-badge ending-badge" id="endingSoonBadge" style="display:none;">
+                ⚡ 即將結標
+            </span>
+
+        </div>
+
+
+        {% if is_completed == 1 %}
+
+            <div class="alert alert-success mt-3">
+                ✅ 此商品已完成交易，已從首頁下架
+            </div>
+
+        {% elif is_paused == 1 %}
+
+            <div class="alert alert-secondary mt-3">
+                ⏸️ 此商品目前暫停販售，暫時不能競標。
+            </div>
+
+        {% elif is_ended %}
+
+            <div class="alert alert-danger mt-3">
+                ⛔ 此商品已結標，已停止出價。
+            </div>
+
+        {% endif %}
+
+        <a
+    href="/favorite/{{ product.id }}"
+    class="btn btn-outline-danger"
+>
+    ❤️ 收藏商品
+</a>
+
+        <div class="bid-live-stage" id="bidLiveStage">
+            <h2 class="detail-price" id="price">
+                NT$ {{ product.current_price or 0 }}
+            </h2>
+
+            <div class="latest-bid-alert" id="latestBidAlert">
+                <span id="latestBidText">🔥 等待新的競標火花</span>
+                <span class="crown-badge">👑 目前第一名</span>
+            </div>
+        </div>
+
+<!-- 🤖 自動出價 -->
+
+{% if session.get("user_id") and session.get("user_id") != product.user_id and not is_ended %}
+
+<div class="auto-bid-box">
+
+    <h4 class="auto-bid-title">
+        🤖 自動競標機器人
+    </h4>
+
+    <p class="auto-bid-text">
+        系統會自動幫你競標直到最高金額
+    </p>
+
+    <form
+        method="POST"
+        action="/auto-bid/{{ product.id }}"
+        class="auto-bid-form"
+    >
+
+        <div class="input-group">
+
+            <input
+                name="max_price"
+                type="number"
+                class="form-control"
+                placeholder="設定最高出價，例如：5000"
+                required
+            >
+
+            <button class="btn btn-shopee">
+
+                🤖 啟用自動出價
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endif %}
+
+        <h4 id="online-users">
+            👥 在線人數：0 人
+        </h4>
+
+        <p>{{ product.description }}</p>
+
+        <div class="product-spec-grid">
+
+            <div class="spec-item">
+                📦 商品狀況
+                <strong>{{ product.condition or "二手" }}</strong>
+            </div>
+
+            <div class="spec-item">
+                🤝 交易方式
+                <strong>{{ product.trade_method or "面交" }}</strong>
+            </div>
+
+            <div class="spec-item">
+                🕒 面交時段
+                <strong>{{ product.meetup_time or "平日晚上" }}</strong>
+            </div>
+
+            <div class="spec-item">
+                💳 付款方式
+                <strong>{{ product.payment_method or "現金" }}</strong>
+            </div>
+
+        </div>
+
+        <p>
+            分類：{{ product.category }}
+        </p>
+
+        <p class="meet-location">
+            📍 建議面交地點：{{ product.meet_location or "尚未設定" }}
+        </p>
+
+
+
+        <p class="view-count">
+            👀 {{ product.views or 0 }} 次瀏覽
+        </p>
+
+        <div class="seller-info-box mt-3 mb-3">
+
+            <div>
+                賣家：
+                <a
+                    href="/profile/{{ product.user_id }}"
+                    style="
+                        text-decoration:none;
+                        font-weight:bold;
+                        color:#ff5722;
+                    "
+                >
+                    {{ product.username }}
+                </a>
+            </div>
+
+            {% if session.get("user_id") and session.get("user_id") != product.user_id %}
+
+                <a
+                    href="/messages/{{ product.user_id }}?product_id={{ product.id }}"
+                    class="btn btn-outline-primary mt-2"
+                >
+                    💬 私訊賣家
+                </a>
+
+            {% endif %}
+
+        </div>
+
+        <div class="seller-rating-box mb-3">
+            ⭐ 賣家評價：
+            {% if seller_stats and seller_stats.review_count|default(0)|int > 0 %}
+                <strong>{{ "%.1f"|format(seller_stats.avg_rating|default(0)) }} / 5</strong>
+                ｜交易成功：{{ seller_stats.review_count }} 次
+            {% else %}
+                尚無評價
+            {% endif %}
+        </div>
+
+        <p>
+            結標時間：
+            {{ product.end_time }}
+        </p>
+
+        <h3 id="countdown"></h3>
+
+        {% if winner %}
+
+            <div class="winner-box">
+
+                🏆 商品得標者：
+                <strong>{{ winner.username }}</strong>
+
+                <br>
+
+                得標金額：
+                <strong>
+                    NT$ {{ winner.bid_price or 0 }}
+                </strong>
+
+                {% if is_completed == 1 %}
+
+                    <div class="alert alert-success mt-3">
+                        ✅ 交易已完成，可以進行雙方評價
+                    </div>
+
+                {% elif session.get("user_id") == product.user_id %}
+
+                    <form
+                        method="POST"
+                        action="/complete-transaction/{{ product.id }}"
+                        class="mt-3"
+                    >
+
+                        <button
+                            class="btn btn-success"
+                            onclick="return confirm('確定買賣雙方已達成共識並完成交易嗎？完成後商品會從首頁下架。')"
+                        >
+                            ✅ 完成交易
+                        </button>
+
+                    </form>
+
+                    <small class="text-muted d-block mt-2">
+                        賣家按下完成交易後，商品會自動從首頁下架，並開啟買賣雙方互評功能。
+                    </small>
+
+                {% endif %}
+
+                {% if is_completed == 0 and session.get("user_id") == winner["user_id"] %}
+
+                    <form
+                        method="POST"
+                        action="/use-coupon/{{ product.id }}"
+                        class="mt-3"
+                    >
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                使用折價券
+                            </label>
+
+                            <select
+                                name="coupon_id"
+                                class="form-select"
+                                required
+                            >
+
+                                <option value="">
+                                    選擇折價券
+                                </option>
+
+                                {% for c in coupons %}
+
+                                    <option value="{{ c.id }}">
+                                        💰 {{ c.discount }} 元折價券
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                            <small class="text-muted">
+                                例如得標金額 1000，使用 100 元折價券，實際得標金額會變成 900。
+                            </small>
+
+                        </div>
+
+                        <button class="btn btn-success">
+                            💰 使用折價券折抵
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+        <hr>
+
+        {% if is_completed == 1 %}
+
+            <div class="alert alert-secondary">
+                ✅ 此商品已完成交易，競標已關閉。
+            </div>
+
+        {% elif is_paused == 1 %}
+
+            <div class="alert alert-secondary">
+                ⏸️ 此商品目前暫停販售，競標已關閉。
+            </div>
+
+        {% elif session.get("user_id") %}
+
+            {% if session.get("user_id") != product.user_id %}
+
+                {% if not is_ended %}
+<form
+                    method="POST"
+                action="/bid/{{ product.id }}"
+                >
+
+                    <div class="input-group mb-3">
+
+                        <input
+                            name="bid_price"
+                            type="number"
+                            class="form-control"
+                            placeholder="最低出價 NT$ {{ min_bid_price }}"
+                            min="{{ min_bid_price }}"
+                            required
+                        >
+
+                    </div>
+
+                    <small class="text-muted d-block mb-3">
+                        目前最低加價幅度：NT$ {{ bid_increment }}，最低可出價：NT$ {{ min_bid_price }}
+                    </small>
+
+                    <div class="input-group mb-3">
+
+                        <button class="btn btn-shopee">
+                            立即競標
+                        </button>
+
+                    </div>
+
+                </form>
+{% else %}
+<div class="alert alert-danger mt-3">
+    ⛔ 競標已結束，無法再出價。
+</div>
+{% endif %}
+
+            {% else %}
+
+                <div class="alert alert-danger">
+                    你是此商品的上架者，不能競標自己的商品。
+                </div>
+
+            {% endif %}
+
+        {% else %}
+
+            <div class="alert alert-warning">
+                請先登入才能競標。
+            </div>
+
+        {% endif %}
+
+        <hr>
+
+        <h3>競標紀錄</h3>
+
+        <div id="bidHistory">
+
+        {% for b in bids %}
+
+            <div class="bid-box">
+
+                👤 {{ b.username }}
+
+                <span>
+                    NT$ {{ b.bid_price }}
+                </span>
+
+            </div>
+
+        {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<hr>
+
+<div class="chat-box">
+
+    <h3>💬 商品聊天室</h3>
+
+    <div
+        id="chatMessages"
+        class="chat-messages"
+    >
+
+        {% for msg in messages %}
+
+<div class="chat-message">
+
+    <strong>{{ msg.username }}：</strong>
+
+    {% if msg.review_count and msg.review_count > 0 %}
+        <small class="chat-rating">
+            ⭐ {{ "%.1f"|format(msg.avg_rating) }} / 5
+        </small>
+    {% endif %}
+
+    {% if msg.message == "此訊息已收回" %}
+
+        <span class="recalled-message">
+            此訊息已收回
+        </span>
+
+    {% else %}
+
+        {% if "@" in msg.message %}
+            <span class="tag-message">
+                {{ msg.message }}
+            </span>
+        {% else %}
+            <span>
+                {{ msg.message }}
+            </span>
+        {% endif %}
+
+    {% endif %}
+
+    <small>
+        🕒 {{ msg.created_at }}
+    </small>
+
+    <div class="reaction-bar" data-message-id="{{ msg.id }}">
+        <button
+            class="reaction-btn"
+            type="button"
+            data-message-id="{{ msg.id }}"
+            data-reaction="👍"
+        >
+            👍 <span id="reaction-{{ msg.id }}-like">{{ msg.like_count or 0 }}</span>
+        </button>
+
+        <button
+            class="reaction-btn"
+            type="button"
+            data-message-id="{{ msg.id }}"
+            data-reaction="😂"
+        >
+            😂 <span id="reaction-{{ msg.id }}-laugh">{{ msg.laugh_count or 0 }}</span>
+        </button>
+
+        <button
+            class="reaction-btn"
+            type="button"
+            data-message-id="{{ msg.id }}"
+            data-reaction="🔥"
+        >
+            🔥 <span id="reaction-{{ msg.id }}-fire">{{ msg.fire_count or 0 }}</span>
+        </button>
+    </div>
+
+    {% if session.get("user_id") == msg.user_id and msg.message != "此訊息已收回" %}
+
+        <form
+            action="/edit-message/{{ msg.id }}"
+            method="POST"
+            class="edit-chat-form"
+        >
+
+            <input
+                name="message"
+                value="{{ msg.message }}"
+                class="form-control"
+                required
+            >
+
+            <button class="btn btn-sm btn-warning">
+                編輯
+            </button>
+
+        </form>
+
+        <form
+            action="/delete-message/{{ msg.id }}"
+            method="POST"
+            style="display:inline;"
+        >
+
+            <button
+                class="btn btn-sm btn-danger mt-2"
+                onclick="return confirm('確定要收回這則訊息嗎？')"
+            >
+                收回
+            </button>
+
+        </form>
+
+    {% endif %}
+
+    {% if session.get("user_id") == product.user_id and msg.user_id != product.user_id and msg.message != "此訊息已收回" %}
+<form
+    action="/block-user/{{ product.id }}/{{ msg.user_id }}"
+    method="POST"
+    class="block-user-form"
+>
+
+    <input
+        type="hidden"
+        name="reason"
+        value="聊天室騷擾或垃圾訊息"
+    >
+
+    <button
+        class="btn btn-sm btn-dark mt-2"
+        onclick="return confirm('確定要封鎖此使用者嗎？')"
+    >
+        🚫 封鎖
+    </button>
+
+</form>
+        <button
+            type="button"
+            class="tag-reply-btn"
+            onclick="tagReply('{{ msg.username }}')"
+        >
+            回覆 @{{ msg.username }}
+        </button>
+
+    {% endif %}
+
+</div>
+
+{% endfor %}
+
+    </div>
+
+    {% if session.get("username") %}
+
+        <div class="chat-input-area">
+
+            <input
+                id="chatInput"
+                class="form-control"
+                placeholder="輸入訊息..."
+            >
+
+            <button
+                class="btn btn-shopee"
+                type="button"
+                onclick="sendMessage()"
+            >
+                送出
+            </button>
+
+        </div>
+
+    {% else %}
+
+        <p class="text-muted">
+            請先登入才能聊天。
+        </p>
+
+    {% endif %}
+
+</div>
+
+<!-- 倒數 -->
+
+<script>
+
+const endTimeText =
+    "{{ product.end_time or '' }}";
+
+const endTime =
+    endTimeText
+        ? new Date(
+    endTimeText.replace(/-/g, "/")
+).getTime()
+        : NaN;
+
+const countdown =
+    document.getElementById("countdown");
+
+const timer = setInterval(function(){
+
+    const now = new Date().getTime();
+
+    if(isNaN(endTime)){
+        clearInterval(timer);
+        countdown.innerHTML = "⏰ 結標時間格式錯誤";
+        countdown.style.color = "red";
+        return;
+    }
+
+    const distance = endTime - now;
+
+    if(distance <= 0){
+
+        clearInterval(timer);
+
+        countdown.innerHTML = "⛔ 競標已結束";
+        countdown.style.color = "red";
+
+
+        document.querySelectorAll('form[action^="/bid/"] input, form[action^="/bid/"] button').forEach(function(el){
+            el.disabled = true;
+        });
+
+        return;
+    }
+
+    const days = Math.floor(
+        distance / (1000 * 60 * 60 * 24)
+    );
+
+    const hours = Math.floor(
+        (distance % (1000 * 60 * 60 * 24))
+        / (1000 * 60 * 60)
+    );
+
+    const minutes = Math.floor(
+        (distance % (1000 * 60 * 60))
+        / (1000 * 60)
+    );
+
+    const seconds = Math.floor(
+        (distance % (1000 * 60))
+        / 1000
+    );
+
+    countdown.innerHTML =
+        "⏰ 剩餘時間："
+        + days + "天 "
+        + hours + "小時 "
+        + minutes + "分鐘 "
+        + seconds + "秒";
+
+}, 1000);
+
+</script>
+
+<!-- Socket -->
+
+<script>
+
+const socket = window.productSocket || io();
+window.productSocket = socket;
+
+const productId =
+    Number("{{ product.id }}");
+
+socket.emit(
+    "join_product",
+    {
+        product_id: productId
+    }
+);
+
+socket.on("online_count", function(data){
+
+    document.getElementById("online-users").innerHTML =
+        "👥 在線人數：" + data.count + " 人";
+
+});
+
+socket.on("new_bid", function(data){
+
+    const currentProductId =
+        Number("{{ product.id }}");
+
+    if(Number(data.product_id) !== currentProductId){
+        return;
+    }
+
+    updateBidPrice(data);
+    showLatestBid(data);
+    prependBidHistory(data);
+    playBidSound();
+    showConfetti();
+
+});
+
+socket.on("new_message", function(data){
+
+    const chatMessages =
+        document.getElementById("chatMessages");
+
+    const div =
+        document.createElement("div");
+
+    div.className = "chat-message";
+
+    let reactionHtml = "";
+
+    if(data.message_id){
+        reactionHtml =
+            `<div class="reaction-bar" data-message-id="${data.message_id}">
+                <button
+                    class="reaction-btn"
+                    type="button"
+                    data-message-id="${data.message_id}"
+                    data-reaction="👍"
+                >
+                    👍 <span id="reaction-${data.message_id}-like">0</span>
+                </button>
+
+                <button
+                    class="reaction-btn"
+                    type="button"
+                    data-message-id="${data.message_id}"
+                    data-reaction="😂"
+                >
+                    😂 <span id="reaction-${data.message_id}-laugh">0</span>
+                </button>
+
+                <button
+                    class="reaction-btn"
+                    type="button"
+                    data-message-id="${data.message_id}"
+                    data-reaction="🔥"
+                >
+                    🔥 <span id="reaction-${data.message_id}-fire">0</span>
+                </button>
+            </div>`;
+    }
+
+    div.innerHTML =
+        "<strong>" + escapeHtml(data.username) + "：</strong> "
+        + "<span>" + escapeHtml(data.message) + "</span> "
+        + "<small> 🕒 " + escapeHtml(data.time || "") + "</small>"
+        + reactionHtml;
+
+    chatMessages.appendChild(div);
+
+    if(chatMessages.children.length > 120){
+        chatMessages.removeChild(chatMessages.firstElementChild);
+    }
+
+    chatMessages.scrollTop =
+        chatMessages.scrollHeight;
+
+});
+
+function updateBidPrice(data){
+
+    const priceBox =
+        document.getElementById("price");
+
+    const liveStage =
+        document.getElementById("bidLiveStage");
+
+    priceBox.innerHTML =
+        "NT$ " + data.price;
+
+    priceBox.classList.remove("price-jump");
+    liveStage.classList.remove("bid-shockwave");
+
+    void priceBox.offsetWidth;
+    void liveStage.offsetWidth;
+
+    priceBox.classList.add("price-jump");
+    liveStage.classList.add("bid-shockwave");
+
+}
+
+function showLatestBid(data){
+
+    const alertBox =
+        document.getElementById("latestBidAlert");
+
+    const textBox =
+        document.getElementById("latestBidText");
+
+    const bidder =
+        data.username || "神秘競標者";
+
+    const autoText =
+        data.is_auto_bid ? " 🤖 自動出價反擊" : "";
+
+    textBox.innerHTML =
+        "🔥 " + escapeHtml(bidder) + autoText + " 出價 NT$ " + data.price;
+
+    alertBox.classList.remove("show");
+    void alertBox.offsetWidth;
+    alertBox.classList.add("show");
+
+}
+
+function prependBidHistory(data){
+
+    const history =
+        document.getElementById("bidHistory");
+
+    if(!history){
+        return;
+    }
+
+    const div =
+        document.createElement("div");
+
+    div.className = "bid-box new-bid-flash";
+
+    const bidder =
+        data.username || "神秘競標者";
+
+    div.innerHTML =
+        "👑 " + escapeHtml(bidder)
+        + " <span>NT$ " + data.price + "</span>";
+
+    history.prepend(div);
+
+}
+
+function playBidSound(){
+
+    try{
+        const audio = new Audio(
+            "https://cdn.pixabay.com/download/audio/2022/03/15/audio_9b1e2f5d5f.mp3?filename=success-fanfare-trumpets-6185.mp3"
+        );
+
+        audio.volume = 0.28;
+        audio.play().catch(function(){});
+    }catch(error){}
+
+}
+
+function showConfetti(){
+
+    const colors = [
+        "#ff5722",
+        "#fbbf24",
+        "#22c55e",
+        "#3b82f6",
+        "#ec4899"
+    ];
+
+    for(let i = 0; i < 18; i++){
+
+        const confetti =
+            document.createElement("div");
+
+        confetti.className = "confetti";
+
+        confetti.style.left =
+            Math.random() * 100 + "vw";
+
+        confetti.style.animationDuration =
+            (Math.random() * 1.8 + 1.8) + "s";
+
+        confetti.style.opacity =
+            Math.random() * 0.7 + 0.3;
+
+        confetti.style.color =
+            colors[Math.floor(Math.random() * colors.length)];
+
+        document.body.appendChild(confetti);
+
+        setTimeout(function(){
+            confetti.remove();
+        }, 3800);
+
+    }
+
+}
+
+function sendMessage(){
+
+    const input =
+        document.getElementById("chatInput");
+
+    if(!input){
+        return;
+    }
+
+    const message =
+        input.value.trim();
+
+    if(message === ""){
+        return;
+    }
+
+    socket.emit(
+        "send_message",
+        {
+            product_id: productId,
+            message: message
+        }
+    );
+
+    input.value = "";
+
+}
+
+function tagReply(username){
+
+    const input =
+        document.getElementById("chatInput");
+
+    if(input){
+
+        input.value =
+            "@" + username + " ";
+
+        input.focus();
+
+    }
+
+}
+
+
+function changeMainImage(thumb, imageUrl){
+
+    const mainImage =
+        document.getElementById("mainProductImage");
+
+    if(mainImage){
+        mainImage.src = imageUrl;
+    }
+
+    document.querySelectorAll(".thumb-image").forEach(function(img){
+        img.classList.remove("active");
+    });
+
+    thumb.classList.add("active");
+
+}
+
+function updateEndingSoonBadge(){
+
+    const badge =
+        document.getElementById("endingSoonBadge");
+
+    if(!badge){
+        return;
+    }
+
+    const now = new Date().getTime();
+    const distance = endTime - now;
+
+    if(distance > 0 && distance <= 60 * 60 * 1000){
+        badge.style.display = "inline-block";
+    }else{
+        badge.style.display = "none";
+    }
+
+}
+
+setInterval(updateEndingSoonBadge, 1000);
+updateEndingSoonBadge();
+
+
+document.addEventListener("click", function(event){
+
+    const reactionButton =
+        event.target.closest(".reaction-btn");
+
+    if(!reactionButton){
+        return;
+    }
+
+    const messageId =
+        reactionButton.dataset.messageId;
+
+    const reaction =
+        reactionButton.dataset.reaction;
+
+    if(!messageId || !reaction){
+        return;
+    }
+
+    reactMessage(messageId, reaction);
+
+});
+
+function reactMessage(messageId, reaction){
+
+    const formData = new FormData();
+    formData.append("reaction", reaction);
+
+    fetch("/chat-reaction-safe/" + messageId, {
+        method: "POST",
+        body: formData
+    })
+    .then(function(response){
+        return response.json();
+    })
+    .then(function(data){
+        if(data.success){
+            updateReactionCounts(messageId, data.counts);
+        }else if(data.message){
+            alert(data.message);
+        }
+    })
+    .catch(function(){});
+
+}
+
+function updateReactionCounts(messageId, counts){
+
+    const likeBox =
+        document.getElementById("reaction-" + messageId + "-like");
+
+    const laughBox =
+        document.getElementById("reaction-" + messageId + "-laugh");
+
+    const fireBox =
+        document.getElementById("reaction-" + messageId + "-fire");
+
+    if(likeBox){
+        likeBox.innerText = counts["👍"] || 0;
+    }
+
+    if(laughBox){
+        laughBox.innerText = counts["😂"] || 0;
+    }
+
+    if(fireBox){
+        fireBox.innerText = counts["🔥"] || 0;
+    }
+
+}
+
+socket.on("reaction_update", function(data){
+    updateReactionCounts(data.message_id, data.counts);
+});
+
+function escapeHtml(value){
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+const chatInput =
+    document.getElementById("chatInput");
+
+if(chatInput){
+
+    chatInput.addEventListener(
+        "keydown",
+        function(event){
+
+            if(event.key === "Enter"){
+
+                sendMessage();
+
+            }
+
+        }
+    );
+
+}
+
+window.addEventListener(
+    "beforeunload",
+    function(){
+
+        socket.emit(
+            "leave_product",
+            {
+                product_id: productId
+            }
+        );
+
+    }
+);
+
+</script>
+
+
+<hr>
+
+<div class="card p-3 mt-4">
+    <h3>🚩 檢舉商品</h3>
+    {% if session.get("user_id") and session.get("user_id") != product.user_id %}
+        <form method="POST" action="/report-product/{{ product.id }}">
+            <textarea name="reason" class="form-control mb-2" rows="3" placeholder="請輸入檢舉原因，例如：內容不實、違禁品、詐騙疑慮..." required></textarea>
+            <button class="btn btn-outline-danger" onclick="return confirm('確定送出檢舉嗎？')">送出檢舉</button>
+        </form>
+    {% else %}
+        <p class="text-muted">登入後可檢舉非本人商品。</p>
+    {% endif %}
+</div>
+
+<div class="card p-3 mt-4">
+    <h3>📦 站內交易流程</h3>
+    {% if trade_order %}
+        <p><strong>成交金額：</strong>NT$ {{ trade_order.final_price }}</p>
+        <p><strong>交易狀態：</strong><span class="badge bg-primary">{{ trade_order.status }}</span></p>
+        <p>
+            <strong>付款狀態：</strong>
+            {% if trade_order.payment_status == '已付款' %}
+                <span class="badge bg-success">已付款</span>
+                <span class="text-muted">{{ trade_order.payment_method }}｜{{ trade_order.paid_at }}</span>
+            {% else %}
+                <span class="badge bg-danger">未付款</span>
+            {% endif %}
+        </p>
+        <p class="text-muted">狀態流程：買家付款 → 等待面交 → 已面交 → 已完成，或取消交易。</p>
+        {% if session.get("user_id") == trade_order.buyer_id and trade_order.payment_status != '已付款' and trade_order.status != '取消交易' %}
+            <a href="/trade-order/{{ trade_order.id }}/pay" class="btn btn-success mb-3">💳 前往付款</a>
+        {% endif %}
+        {% if session.get("user_id") in [trade_order.seller_id, trade_order.buyer_id] or session.get("is_admin") == 1 %}
+            <form method="POST" action="/trade-order/{{ trade_order.id }}/status" class="d-flex gap-2 flex-wrap">
+                <select name="status" class="form-control" style="max-width:220px;">
+                    {% for s in ["等待面交", "已面交", "已完成", "取消交易"] %}
+                        <option value="{{ s }}" {% if trade_order.status == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-shopee">更新交易狀態</button>
+            </form>
+        {% endif %}
+    {% else %}
+        <p class="text-muted">商品結標且有最高出價者後，系統會自動建立交易訂單。</p>
+    {% endif %}
+</div>
+
+<div class="card p-3 mt-4">
+    <h3>❓ 商品問答區</h3>
+    {% if session.get("user_id") and session.get("user_id") != product.user_id %}
+        <form method="POST" action="/question/{{ product.id }}" class="mb-3">
+            <textarea name="question" class="form-control mb-2" rows="3" placeholder="公開詢問賣家，例如：可以在哪裡面交？商品有瑕疵嗎？" required></textarea>
+            <button class="btn btn-shopee">送出問題</button>
+        </form>
+    {% elif not session.get("user_id") %}
+        <p class="text-muted">請先登入才能提問。</p>
+    {% endif %}
+
+    {% for q in questions %}
+        <div class="border rounded p-3 mb-2">
+            <div><strong>{{ q.asker_name }}</strong> 問：</div>
+            <p class="mb-1">{{ q.question }}</p>
+            <small class="text-muted">{{ q.created_at }}</small>
+
+            {% if q.answer %}
+                <div class="alert alert-success mt-2 mb-0">
+                    <strong>賣家回覆：</strong>{{ q.answer }}
+                    <br><small>{{ q.answered_at }}</small>
+                </div>
+            {% elif session.get("user_id") == product.user_id %}
+                <form method="POST" action="/answer-question/{{ q.id }}" class="mt-2">
+                    <textarea name="answer" class="form-control mb-2" rows="2" placeholder="回覆這個問題" required></textarea>
+                    <button class="btn btn-outline-primary btn-sm">回覆</button>
+                </form>
+            {% else %}
+                <p class="text-muted mt-2 mb-0">賣家尚未回覆。</p>
+            {% endif %}
+        </div>
+    {% else %}
+        <p class="text-muted">目前還沒有公開問題。</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

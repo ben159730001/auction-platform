@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        校園拍賣平台
+    </title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+
+<style>
+/* ===== 手機版優化：全站 RWD ===== */
+.mobile-menu-btn{
+    display:none;
+    border:0;
+    background:#ff5722;
+    color:white;
+    border-radius:12px;
+    padding:9px 12px;
+    font-weight:bold;
+}
+
+.mobile-bottom-nav{
+    display:none;
+}
+
+@media (max-width: 768px){
+
+    body{
+        padding-bottom:76px;
+        overflow-x:hidden;
+    }
+
+    .shopee-nav{
+        position:sticky;
+        top:0;
+        z-index:999;
+    }
+
+    .nav-container{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        padding:10px;
+    }
+
+    .nav-left{
+        width:100%;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+    }
+
+    .mobile-menu-btn{
+        display:inline-block;
+    }
+
+    .nav-center{
+        width:100%;
+        order:3;
+    }
+
+    .navbar-search{
+        display:flex;
+        width:100%;
+        gap:8px;
+    }
+
+    .navbar-search input{
+        flex:1;
+        min-width:0;
+        height:42px;
+        font-size:16px;
+    }
+
+    .navbar-search button,
+    .btn,
+    .btn-shopee,
+    button{
+        min-height:42px;
+        font-size:15px;
+        border-radius:12px;
+    }
+
+    .nav-right{
+        display:none;
+        width:100%;
+        order:4;
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+    }
+
+    .nav-right.mobile-open{
+        display:grid;
+    }
+
+    .nav-link-custom,
+    .notification-btn{
+        display:block;
+        text-align:center;
+        padding:10px;
+        border-radius:12px;
+        background:#fff3ee;
+        color:#ff5722;
+        font-weight:bold;
+        text-decoration:none;
+    }
+
+    .main-layout{
+        display:block !important;
+        padding:0 10px;
+    }
+
+    .sidebar{
+        display:flex !important;
+        overflow-x:auto;
+        gap:8px;
+        padding:10px 0;
+        margin-bottom:12px;
+        width:100%;
+        position:static;
+    }
+
+    .sidebar::-webkit-scrollbar{
+        display:none;
+    }
+
+    .category-title{
+        display:none;
+    }
+
+    .sidebar-btn{
+        flex:0 0 auto;
+        white-space:nowrap;
+        padding:9px 13px;
+        border-radius:999px;
+        font-size:14px;
+    }
+
+    .content-area{
+        width:100% !important;
+    }
+
+    .product-grid,
+    .recommend-grid,
+    .recent-grid{
+        display:grid !important;
+        grid-template-columns:1fr 1fr !important;
+        gap:12px !important;
+    }
+
+    .product-card{
+        border-radius:16px !important;
+        overflow:hidden;
+    }
+
+    .product-image,
+    .card-img-top{
+        height:150px !important;
+        object-fit:cover;
+        width:100%;
+    }
+
+    .product-title{
+        font-size:16px !important;
+        line-height:1.35;
+        min-height:42px;
+    }
+
+    .price,
+    .detail-price{
+        font-size:18px !important;
+    }
+
+    .hero-banner{
+        min-height:180px !important;
+        border-radius:0 0 22px 22px;
+    }
+
+    .hero-logo{
+        max-width:88px !important;
+    }
+
+    .hero-description{
+        font-size:20px !important;
+    }
+
+    .sort-box{
+        margin-bottom:12px;
+    }
+
+    .sort-select{
+        width:100%;
+        height:42px;
+        font-size:15px;
+    }
+
+    .row{
+        margin-left:0;
+        margin-right:0;
+    }
+
+    .col-md-4,
+    .col-md-5,
+    .col-md-6,
+    .col-md-7{
+        width:100%;
+        padding-left:0;
+        padding-right:0;
+    }
+
+    .detail-image{
+        width:100% !important;
+        max-height:360px;
+        object-fit:cover;
+        border-radius:18px;
+        margin-bottom:16px;
+    }
+
+    .chat-box,
+    .live-messages,
+    .message-list{
+        max-height:62vh;
+        overflow-y:auto;
+        padding:10px;
+        border-radius:16px;
+    }
+
+    .chat-message{
+        max-width:88%;
+        word-break:break-word;
+        margin-bottom:10px;
+    }
+
+    .my-message{
+        margin-left:auto;
+    }
+
+    textarea.form-control{
+        min-height:92px;
+        font-size:16px;
+    }
+
+    input.form-control,
+    select.form-control,
+    select.form-select{
+        min-height:42px;
+        font-size:16px;
+    }
+
+    .admin-table{
+        display:block;
+        width:100%;
+        overflow-x:auto;
+        white-space:nowrap;
+    }
+
+    .profile-header{
+        justify-content:center;
+        text-align:center;
+    }
+
+    .profile-avatar-big{
+        margin-right:0 !important;
+        margin-bottom:15px;
+    }
+
+    .mobile-bottom-nav{
+        position:fixed;
+        left:0;
+        right:0;
+        bottom:0;
+        display:grid;
+        grid-template-columns:repeat(5,1fr);
+        background:white;
+        border-top:1px solid #eee;
+        box-shadow:0 -4px 16px rgba(0,0,0,0.08);
+        z-index:1000;
+    }
+
+    .mobile-bottom-nav a{
+        text-align:center;
+        padding:8px 4px;
+        font-size:12px;
+        color:#444;
+        text-decoration:none;
+    }
+
+    .mobile-bottom-nav span{
+        display:block;
+        font-size:20px;
+        line-height:20px;
+        margin-bottom:3px;
+    }
+}
+
+@media (max-width: 420px){
+    .product-grid,
+    .recommend-grid,
+    .recent-grid{
+        grid-template-columns:1fr !important;
+    }
+
+    .product-image,
+    .card-img-top{
+        height:210px !important;
+    }
+}
+</style>
+<script>
+function toggleMobileMenu(){
+    const navRight = document.querySelector(".nav-right");
+    if(navRight){
+        navRight.classList.toggle("mobile-open");
+    }
+}
+</script>
+
+
+<style>
+.realtime-toast{
+    position:fixed;
+    right:18px;
+    top:86px;
+    z-index:2000;
+    display:none;
+    max-width:330px;
+    background:#111827;
+    color:white;
+    padding:14px 16px;
+    border-radius:18px;
+    box-shadow:0 10px 28px rgba(0,0,0,0.25);
+    font-weight:700;
+}
+.realtime-toast.show{
+    display:block;
+    animation:toastPop 0.3s ease-out;
+}
+.realtime-toast a{
+    color:white;
+    text-decoration:none;
+}
+@keyframes toastPop{
+    from{ transform:translateY(-12px); opacity:0; }
+    to{ transform:translateY(0); opacity:1; }
+}
+@media (max-width:768px){
+    .realtime-toast{
+        left:12px;
+        right:12px;
+        top:72px;
+        max-width:none;
+    }
+}
+</style>
+
+
+<style>
+.platform-announcement-area{
+    max-width:1140px;
+    margin:14px auto 0;
+    padding:0 12px;
+}
+.platform-announcement{
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+    border-radius:16px;
+    padding:12px 16px;
+    margin-bottom:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.06);
+}
+.platform-announcement strong{
+    color:#ea580c;
+}
+</style>
+
+</head>
+
+<script>
+function toggleDarkMode(){
+
+    document.body.classList.toggle("dark-mode");
+
+    if(document.body.classList.contains("dark-mode")){
+        localStorage.setItem("theme", "dark");
+    }else{
+        localStorage.setItem("theme", "light");
+    }
+
+    updateThemeButton();
+
+}
+
+function updateThemeButton(){
+
+    const btn = document.getElementById("themeToggleBtn");
+
+    if(!btn){
+        return;
+    }
+
+    if(document.body.classList.contains("dark-mode")){
+        btn.innerHTML = "☀️";
+    }else{
+        btn.innerHTML = "🌙";
+    }
+
+}
+
+window.addEventListener("load", function(){
+
+    if(localStorage.getItem("theme") === "dark"){
+        document.body.classList.add("dark-mode");
+    }
+
+    updateThemeButton();
+
+});
+</script>
+<!-- 第一次登入彈窗 -->
+{% if session.get("show_first_login_popup") %}
+
+<div class="modal fade show"
+     style="display:block;background:rgba(0,0,0,.55);"
+     tabindex="-1">
+
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:22px;">
+
+      <div class="modal-body text-center p-4">
+
+        <h3>🎉 歡迎加入 NCUT 校園拍賣平台！</h3>
+
+        <p class="mt-3">
+            完成第一次商品上架<br>
+            立即獲得 1000 金幣獎勵 🚀
+        </p>
+
+        <a href="/add" class="btn btn-shopee w-100">
+            立即開始上架
+        </a>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+{% endif %}
+
+<body>
+
+    <nav class="shopee-nav">
+
+        <div class="nav-container">
+
+            <!-- 左側 -->
+
+            <div class="nav-left">
+
+                <a href="/" class="logo">
+                    🛒 首頁
+                </a>
+
+                <button class="mobile-menu-btn" type="button" onclick="toggleMobileMenu()">
+                    ☰ 選單
+                </button>
+
+            </div>
+
+            <!-- 中間搜尋 -->
+
+            <div class="nav-center">
+
+                <form
+                    action="/"
+                    method="GET"
+                    class="navbar-search"
+                >
+
+                    <input
+                        type="text"
+                        name="keyword"
+                        placeholder="搜尋商品..."
+                    >
+
+                    <button type="submit">
+                        搜尋
+                    </button>
+
+                </form>
+
+            </div>
+
+            <!-- 右側 -->
+
+            <div class="nav-right">
+
+                <button
+                    id="themeToggleBtn"
+                    class="theme-toggle-btn"
+                    type="button"
+                    onclick="toggleDarkMode()"
+                >
+                    🌙
+                </button>
+
+                {% if session.get("username") %}
+
+                    <a
+                        href="/add"
+                        class="nav-link-custom"
+                    >
+                        新增商品
+                    </a>
+
+                    <a
+                        href="/my-products"
+                        class="nav-link-custom"
+                    >
+                        我的商品
+                    </a>
+
+                    <a
+                        href="/my-favorites"
+                        class="nav-link-custom"
+                    >
+                        ❤️ 我的收藏
+                    </a>
+
+                    <a
+                        href="/live"
+                        class="nav-link-custom"
+                    >
+                        🔴 直播競標
+                    </a>
+
+                    <a
+                        href="/my-bids"
+                        class="nav-link-custom"
+                    >
+                        我的競標
+                    </a>
+
+                    <a
+                        href="/daily-checkin"
+                        class="nav-link-custom"
+                    >
+                        🎁 每日簽到
+                    </a>
+
+                    <a
+                        href="/coin-shop"
+                        class="nav-link-custom"
+                    >
+                        💰 金幣商城
+                    </a>
+
+                    <a
+                        href="/notifications"
+                        class="nav-link-custom notification-link"
+                    >
+                        🔔 通知
+
+                        {% if notification_count and notification_count > 0 %}
+                            <span class="notification-badge">
+                                {{ notification_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+
+                    <a
+                        href="/messages"
+                        class="nav-link-custom"
+                    >
+                        💬 私訊
+                    </a>
+
+                    <span class="coin-box">
+
+                        <img
+                            src="{{ url_for('static', filename='coin.png') }}"
+                            class="coin-icon"
+                        >
+
+                        {{ session.get("coins", 0) }} $
+
+                    </span>
+
+                    <div class="user-dropdown">
+
+                        <button
+                            class="user-btn"
+                            onclick="toggleUserMenu()"
+                            type="button"
+                        >
+
+                            <img
+                                src="{{ session.get('avatar', '/static/default-avatar.png') }}"
+                                class="nav-avatar"
+                            >
+
+                            <span>
+                                {{ session["username"] }}
+                            </span>
+
+                            <span class="user-arrow">
+                                ▾
+                            </span>
+
+                        </button>
+
+                        <div
+                            id="userMenu"
+                            class="user-menu"
+                        >
+
+                            <a href="/profile/{{ session.get('user_id') }}">
+                                👤 個人頁面
+                            </a>
+
+                            <a href="/profile/edit">
+                                🖼️ 編輯頭像 / 封面
+                            </a>
+
+                            <a href="/my-products">
+                                📦 我的商品
+                            </a>
+
+                            <a href="/my-bids">
+                                🔨 我的競標
+                            </a>
+
+                            <a href="/my-favorites">
+                                ❤️ 我的收藏
+                            </a>
+
+                            <a href="/coin-shop">
+                                💰 金幣商城
+                            </a>
+
+                            <a href="/notifications">
+                                🔔 我的通知
+                            </a>
+
+                            <a href="/messages">
+                                💬 我的私訊
+                            </a>
+
+                            <hr>
+
+                            <a
+                                href="/logout"
+                                class="menu-logout"
+                            >
+                                🚪 登出
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <a
+                        href="/login"
+                        class="nav-link-custom"
+                    >
+                        登入
+                    </a>
+
+                    <a
+                        href="/register"
+                        class="register-btn"
+                    >
+                        註冊
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+    {% if active_announcements is defined and active_announcements %}
+        <div class="platform-announcement-area">
+            {% for a in active_announcements %}
+                <div class="platform-announcement">
+                    📢 <strong>{{ a.title }}</strong>：{{ a.content }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Flash Messages -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            <div class="flash-area">
+
+                {% for category, message in messages %}
+
+                    <div class="flash-message {{ category }}">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+    <!-- Content -->
+
+    <div class="container mt-4">
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+
+    <!-- Flash 自動消失 -->
+
+    <script>
+
+        setTimeout(() => {
+
+            const flashMessages =
+                document.querySelectorAll(".flash-message");
+
+            flashMessages.forEach(msg => {
+
+                msg.style.transition = "0.5s";
+                msg.style.opacity = "0";
+
+                setTimeout(() => {
+
+                    msg.remove();
+
+                }, 500);
+
+            });
+
+        }, 3000);
+
+    </script>
+
+
+
+
+    <div class="mobile-bottom-nav">
+        <a href="/"><span>🏠</span>首頁</a>
+        <a href="/add"><span>＋</span>上架</a>
+        <a href="/my-favorites"><span>❤️</span>收藏</a>
+        <a href="/messages"><span>💬</span>私訊</a>
+        <a href="/my-products"><span>📦</span>我的</a>
+    </div>
+
+
+    <div class="realtime-toast" id="realtimeToast">
+        <a href="/notifications" id="realtimeToastLink">
+            <span id="realtimeToastText">🔔 新通知</span>
+        </a>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+    window.addEventListener("load", function(){
+
+        if(typeof io === "undefined"){
+            return;
+        }
+
+        const notifySocket = io();
+
+        notifySocket.emit("join_user_notifications");
+
+        notifySocket.on("realtime_notification", function(data){
+
+            const toast =
+                document.getElementById("realtimeToast");
+
+            const text =
+                document.getElementById("realtimeToastText");
+
+            const link =
+                document.getElementById("realtimeToastLink");
+
+            if(!toast || !text || !link){
+                return;
+            }
+
+            text.innerText =
+                "🔔 " + data.message;
+
+            link.href =
+                data.link || "/notifications";
+
+            toast.classList.add("show");
+
+            setTimeout(function(){
+                toast.classList.remove("show");
+            }, 5200);
+
+        });
+
+    });
+    </script>
+
+
+    <script>
+
+    function toggleUserMenu(){
+
+        const menu =
+            document.getElementById("userMenu");
+
+        if(menu){
+            menu.classList.toggle("show");
+        }
+
+    }
+
+    window.addEventListener("click", function(e){
+
+        if(!e.target.closest(".user-dropdown")){
+
+            const menu =
+                document.getElementById("userMenu");
+
+            if(menu){
+                menu.classList.remove("show");
+            }
+
+        }
+
+    });
+
+    </script>
+
+</body>
+
+</html>

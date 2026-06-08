@@ -1,0 +1,514 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+.product-platform-badges{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-bottom:8px;
+}
+.platform-badge{
+    display:inline-block;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+}
+.badge-condition{ background:#e0f2fe; color:#0369a1; }
+.badge-hot{ background:#fee2e2; color:#b91c1c; }
+.badge-ending{ background:#fef3c7; color:#92400e; }
+.badge-premium{ background:#ede9fe; color:#5b21b6; }
+</style>
+
+
+<style>
+.special-frame-card{
+    border:4px solid #ff9800;
+    box-shadow:0 0 18px rgba(255,152,0,0.75);
+    position:relative;
+}
+.special-frame-card::before{
+    content:"✨ 精選商品";
+    position:absolute;
+    top:8px;
+    right:8px;
+    background:linear-gradient(135deg,#ff9800,#ff5722);
+    color:white;
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:13px;
+    z-index:2;
+}
+</style>
+
+
+<style>
+/* ===== HERO 強化版：避免白底白字看不見 ===== */
+.hero-banner{
+    min-height:420px;
+    border-radius:28px;
+    padding:48px 20px;
+    margin-bottom:32px;
+    background:linear-gradient(135deg,#ff5722 0%,#ff7a45 45%,#ffb36b 100%) !important;
+    box-shadow:0 18px 45px rgba(255,87,34,0.28);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    overflow:hidden;
+}
+.hero-content{
+    max-width:900px;
+    margin:0 auto;
+    color:#fff !important;
+}
+.hero-logo{
+    width:92px;
+    max-width:28vw;
+    margin-bottom:14px;
+    filter:drop-shadow(0 8px 18px rgba(0,0,0,0.18));
+}
+.hero-subtitle{
+    color:rgba(255,255,255,0.94) !important;
+    font-size:18px;
+    font-weight:800;
+    letter-spacing:3px;
+    margin-bottom:10px;
+}
+.hero-main-title{
+    color:#fff !important;
+    font-size:54px;
+    line-height:1.12;
+    font-weight:950;
+    margin:10px 0 22px;
+    text-shadow:0 4px 18px rgba(0,0,0,0.22);
+}
+.hero-feature-list{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    margin:0 auto 26px;
+    max-width:760px;
+}
+.hero-feature-list div{
+    background:rgba(255,255,255,0.18);
+    border:1px solid rgba(255,255,255,0.32);
+    color:#fff !important;
+    border-radius:18px;
+    padding:13px 15px;
+    font-size:18px;
+    font-weight:850;
+    backdrop-filter:blur(8px);
+}
+.hero-btn-group{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+}
+.hero-main-btn,
+.hero-second-btn{
+    min-width:190px;
+    padding:13px 24px !important;
+    border-radius:16px !important;
+    font-size:18px;
+    font-weight:900 !important;
+    text-decoration:none;
+}
+.hero-main-btn{
+    background:#fff !important;
+    color:#ff5722 !important;
+    border:0 !important;
+}
+.hero-second-btn{
+    background:rgba(255,255,255,0.12) !important;
+    color:#fff !important;
+    border:2px solid rgba(255,255,255,0.75) !important;
+}
+.hero-safe-text{
+    display:block;
+    color:rgba(255,255,255,0.92) !important;
+    font-size:14px;
+    font-weight:700;
+}
+@media(max-width:768px){
+    .hero-banner{
+        min-height:auto;
+        padding:36px 14px;
+        border-radius:0 0 24px 24px;
+    }
+    .hero-main-title{
+        font-size:34px;
+    }
+    .hero-subtitle{
+        font-size:14px;
+        letter-spacing:2px;
+    }
+    .hero-feature-list{
+        grid-template-columns:1fr;
+        gap:9px;
+    }
+    .hero-feature-list div{
+        font-size:15px;
+        padding:11px 12px;
+    }
+    .hero-main-btn,
+    .hero-second-btn{
+        width:100%;
+        min-width:0;
+        font-size:16px;
+    }
+}
+</style>
+
+<!-- HERO 區 -->
+
+<div class="hero-banner">
+
+    <div class="hero-content">
+
+        <img
+            src="{{ url_for('static', filename='school_logo.png') }}"
+            class="hero-logo"
+        >
+
+        <p class="hero-subtitle">
+            NCUT 校園拍賣平台
+        </p>
+
+        <h1 class="hero-main-title">
+            今天上架，今天成交
+        </h1>
+
+        <div class="hero-feature-list">
+
+            <div>🚀 最快 30 分鐘校內直接面交</div>
+
+            <div>🔥 熱門商品即時競標中</div>
+
+            <div>🎓 勤益學生限定，學校信箱驗證更安心</div>
+
+            <div>⚡ 校園交易，不用等、不怕遠</div>
+
+        </div>
+        <!-- 首頁 Hero 下方公告區 -->
+<div class="alert alert-warning shadow-sm mt-4" style="border-radius:18px;">
+    <h5>🎉 首次註冊登入即送2000金幣！
+            首次上架商品再送 1000 金幣！</h5>
+
+    <div>🚀 完成第一次上架即可領取</div>
+    <div>🎓 僅限學校信箱驗證帳號</div>
+    <div>💡 金幣可用於置頂、特殊框、折價券兌換</div>
+</div>
+
+
+        <div class="hero-btn-group">
+
+            <a
+                href="/add"
+                class="btn hero-main-btn"
+            >
+                🚀 立即開始上架
+            </a>
+
+            <a
+                href="#productList"
+                class="btn hero-second-btn"
+            >
+                👀 逛熱門商品
+            </a>
+
+        </div>
+
+        <small class="hero-safe-text">
+            🛡️ 僅限勤益學生信箱註冊，打造更安全的校園交易環境
+        </small>
+
+    </div>
+
+</div>
+
+<div class="main-layout">
+
+    <!-- 左側分類 -->
+
+    <div class="sidebar">
+
+        <h3 class="category-title">
+            商品分類
+        </h3>
+
+        <a href="/" class="sidebar-btn">
+            全部商品
+        </a>
+
+        <a href="/?category=生活用品" class="sidebar-btn">
+            生活用品
+        </a>
+
+        <a href="/?category=食品" class="sidebar-btn">
+            食品
+        </a>
+
+        <a href="/?category=電器用品" class="sidebar-btn">
+            電器用品
+        </a>
+
+        <a href="/?category=服飾" class="sidebar-btn">
+            服飾
+        </a>
+
+        <a href="/?category=書籍" class="sidebar-btn">
+            書籍
+        </a>
+
+        <a href="/?category=3C" class="sidebar-btn">
+            3C
+        </a>
+
+        <a href="/?category=遊戲" class="sidebar-btn">
+            遊戲
+        </a>
+
+        <a href="/?category=動漫周邊" class="sidebar-btn">
+            動漫周邊
+        </a>
+
+        <a href="/?category=美妝" class="sidebar-btn">
+            美妝
+        </a>
+
+        <a href="/?category=運動用品" class="sidebar-btn">
+            運動用品
+        </a>
+
+        <a href="/?category=家具" class="sidebar-btn">
+            家具
+        </a>
+
+        <a href="/?category=精品" class="sidebar-btn">
+            精品
+        </a>
+
+        <a href="/?category=票券" class="sidebar-btn">
+            票券
+        </a>
+
+        <a href="/?category=其他" class="sidebar-btn">
+            其他
+        </a>
+
+    </div>
+
+    <!-- 右側商品 -->
+
+    <div class="content-area">
+
+
+        <!-- 最近看過 -->
+        {% if recent_viewed_products %}
+
+            <div class="recommend-section recent-viewed-section">
+
+                <h3 class="recommend-title">
+                    👀 最近看過
+                </h3>
+
+                <div class="product-grid recent-grid">
+
+                    {% for p in recent_viewed_products %}
+
+                        <div class="product-card {% if p.special_frame == 1 %}special-frame-card{% endif %}">
+
+                            <img
+                                src="{{ p.image }}"
+                                class="product-image"
+                            >
+
+                            <div class="p-3">
+
+                                {% if p.special_frame == 1 %}
+                                    <div class="badge bg-danger mb-2">
+                                        ✨ 特殊框
+                                    </div>
+                                {% endif %}
+
+                                {% if p.is_pinned == 1 %}
+                                    <div class="badge bg-warning mb-2">
+                                        🚀 置頂商品
+                                    </div>
+                                {% endif %}
+
+                                <div class="product-platform-badges">
+                                    {% if "condition" in p.keys() and p["condition"] %}
+                                        <span class="platform-badge badge-condition">{{ p["condition"] }}</span>
+                                    {% else %}
+                                        <span class="platform-badge badge-condition">二手</span>
+                                    {% endif %}
+
+                                    {% set fav_count = p["favorite_count"] if "favorite_count" in p.keys() else 0 %}
+                                    {% if (p.views|int) >= 50 or fav_count >= 5 %}
+                                        <span class="platform-badge badge-hot">🔥 熱門</span>
+                                    {% endif %}
+
+                                    {% if "is_ending_soon" in p.keys() and p["is_ending_soon"] == 1 %}
+                                        <span class="platform-badge badge-ending">⚡ 即將結標</span>
+                                    {% endif %}
+
+                                    {% if (p.current_price|int) >= 10000 %}
+                                        <span class="platform-badge badge-premium">💎 高價商品</span>
+                                    {% endif %}
+                                </div>
+                                <h4 class="product-title">
+                                    {{ p.title }}
+                                </h4>
+
+                                <div class="price">
+                                    NT$ {{ p.current_price }}
+                                </div>
+
+                                <p class="category">
+                                    {{ p.category }}
+                                </p>
+
+                                <a
+                                    href="/product/{{ p.id }}"
+                                    class="btn btn-shopee w-100"
+                                >
+                                    再看一次
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+        <form method="GET" action="/" class="sort-box">
+
+            <input
+                type="hidden"
+                name="keyword"
+                value="{{ keyword }}"
+            >
+
+            <input
+                type="hidden"
+                name="category"
+                value="{{ category }}"
+            >
+
+            <select
+                name="sort"
+                class="sort-select"
+                onchange="this.form.submit()"
+            >
+
+                <option value="newest" {% if sort == "newest" %}selected{% endif %}>
+                    上架時間由新至舊
+                </option>
+
+                <option value="oldest" {% if sort == "oldest" %}selected{% endif %}>
+                    上架時間由舊至新
+                </option>
+
+                <option value="views_high" {% if sort == "views_high" %}selected{% endif %}>
+                    瀏覽次數高到低
+                </option>
+
+                <option value="views_low" {% if sort == "views_low" %}selected{% endif %}>
+                    瀏覽次數低到高
+                </option>
+
+                <option value="price_high" {% if sort == "price_high" %}selected{% endif %}>
+                    價格高到低
+                </option>
+
+                <option value="price_low" {% if sort == "price_low" %}selected{% endif %}>
+                    價格低到高
+                </option>
+
+            </select>
+
+        </form>
+
+        <!-- 全部商品列表 -->
+        <div id="productList" class="product-grid">
+
+            {% for p in products %}
+
+                <div class="product-card {% if p.special_frame == 1 %}special-frame-card{% endif %}">
+
+                    <img
+                        src="{{ p.image }}"
+                        class="product-image"
+                    >
+
+                    <div class="p-3">
+
+                        {% if p.special_frame == 1 %}
+
+                            <div class="badge bg-danger mb-2">
+                                ✨ 特殊框
+                            </div>
+
+                        {% endif %}
+
+                        {% if p.is_pinned == 1 %}
+
+                            <div class="badge bg-warning mb-2">
+                                🚀 置頂商品
+                            </div>
+
+                        {% endif %}
+
+                        <h4 class="product-title">
+                            {{ p.title }}
+                        </h4>
+
+                        <div class="price">
+                            NT$ {{ p.current_price }}
+                        </div>
+
+                        <p class="category">
+                            {{ p.category }}
+                        </p>
+
+                        <p class="favorite-count">
+                            ❤️ {{ p.favorite_count or 0 }} 人收藏
+                        </p>
+
+                        <a
+                            href="/product/{{ p.id }}"
+                            class="btn btn-shopee"
+                        >
+                            查看商品
+                        </a>
+
+                    </div>
+
+                </div>
+
+            {% else %}
+
+                <p class="empty-text">
+                    目前沒有商品。
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

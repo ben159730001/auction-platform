@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="container mt-4" style="max-width:760px;">
+    <div class="card p-4 shadow-sm">
+        <h2 class="mb-3">💳 訂單付款</h2>
+
+        <div class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <img
+                    src="{{ order.image or '/static/default-product.png' }}"
+                    style="width:100%;border-radius:16px;object-fit:cover;max-height:220px;"
+                >
+            </div>
+            <div class="col-md-8">
+                <h4>{{ order.title }}</h4>
+                <p class="mb-1"><strong>賣家：</strong>{{ order.seller_name }}</p>
+                <p class="mb-1"><strong>買家：</strong>{{ order.buyer_name }}</p>
+                <p class="mb-1"><strong>面交地點：</strong>{{ order.meet_location or '尚未指定' }}</p>
+                <p class="mb-1"><strong>成交金額：</strong><span class="text-danger fw-bold">NT$ {{ order.final_price }}</span></p>
+                <p class="mb-0"><strong>付款狀態：</strong>{{ order.payment_status or '未付款' }}</p>
+            </div>
+        </div>
+
+        <hr>
+
+        {% if order.payment_status == '已付款' %}
+            <div class="alert alert-success">
+                此訂單已付款，付款方式：{{ order.payment_method }}，付款時間：{{ order.paid_at }}。
+            </div>
+            <a href="/product/{{ order.product_id }}" class="btn btn-shopee">返回商品頁</a>
+        {% else %}
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">付款方式</label>
+                    <select name="payment_method" class="form-control" required>
+                        <option value="校園錢包">校園錢包（金幣扣款）</option>
+                        <option value="面交現金">面交現金</option>
+                        <option value="銀行轉帳">銀行轉帳</option>
+                        <option value="LINE Pay 模擬">LINE Pay 模擬</option>
+                    </select>
+                    <small class="text-muted">
+                        專題展示模式：校園錢包會扣買家金幣並加到賣家帳戶；其他方式會建立付款紀錄，不串接真實金流。
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">付款備註</label>
+                    <textarea
+                        name="payment_note"
+                        class="form-control"
+                        rows="3"
+                        placeholder="例如：轉帳末五碼、面交付款說明，可留空"
+                    ></textarea>
+                </div>
+
+                <button class="btn btn-success w-100" onclick="return confirm('確定送出付款嗎？')">
+                    確認付款
+                </button>
+
+                <a href="/product/{{ order.product_id }}" class="btn btn-secondary w-100 mt-2">
+                    取消返回
+                </a>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

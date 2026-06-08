@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h1 class="page-title">
+    🔔 我的通知
+</h1>
+
+<div class="notification-list">
+
+    {% for n in notifications %}
+
+        <a
+            href="{{ n.link }}"
+            class="notification-card"
+        >
+
+            <div>
+                {{ n.message }}
+            </div>
+
+            <small>
+                {{ n.created_at }}
+            </small>
+
+        </a>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

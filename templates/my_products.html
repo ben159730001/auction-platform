@@ -1,0 +1,168 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<style>
+.special-frame-card{
+    border:4px solid #ff9800;
+    box-shadow:0 0 18px rgba(255,152,0,0.75);
+}
+
+.paused-product-card{
+    opacity:0.6;
+    filter:grayscale(0.35);
+}
+</style>
+
+<h2 class="mb-4">
+    我的商品
+</h2>
+
+<div class="product-grid">
+
+    {% for p in products %}
+
+        <div class="product-card {% if p.special_frame == 1 %}special-frame-card{% endif %} {% if p.is_paused == 1 %}paused-product-card{% endif %}">
+
+            <img
+                src="{{ p.image }}"
+                class="product-image"
+            >
+
+            <div class="p-3">
+
+                {% if p.special_frame == 1 %}
+
+                    <div class="badge bg-danger mb-2">
+                        ✨ 特殊框
+                    </div>
+
+                {% endif %}
+
+                {% if p.is_paused == 1 %}
+
+                    <div class="badge bg-secondary mb-2">
+                        ⏸️ 暫停販售
+                    </div>
+
+                {% endif %}
+
+                {% if p.is_pinned == 1 %}
+
+                    <div class="badge bg-warning mb-2">
+                        🚀 置頂中
+                    </div>
+
+                {% endif %}
+
+                <h3 class="product-title">
+                    {{ p.title }}
+                </h3>
+
+                <p class="price">
+                    NT$ {{ p.current_price }}
+                </p>
+
+                <p class="category">
+                    {{ p.category }}
+                </p>
+
+                <a
+                    href="/product/{{ p.id }}"
+                    class="btn btn-shopee w-100 mb-2"
+                >
+                    查看商品
+                </a>
+
+                {% if p.special_frame == 1 %}
+
+                    <div class="badge bg-danger mb-2">
+                        ✨ 特殊框
+                    </div>
+
+                {% endif %}
+
+                {% if p.is_pinned == 1 %}
+
+                    <button
+                        class="btn btn-secondary w-100 mb-2"
+                        disabled
+                    >
+                        🚀 已置頂
+                    </button>
+
+                {% else %}
+
+                    <a
+                        href="/pin-product/{{ p.id }}"
+                        class="btn btn-warning w-100 mb-2"
+                        onclick="return confirm('確定花費 500 金幣置頂此商品 24 小時嗎？')"
+                    >
+                        🚀 商品置頂（500 金幣）
+                    </a>
+
+                {% endif %}
+
+                {% if p.special_frame == 1 %}
+
+                    <button
+                        class="btn btn-secondary w-100 mb-2"
+                        disabled
+                    >
+                        ✨ 已有特殊框
+                    </button>
+
+                {% else %}
+
+                    <a
+                        href="/buy-frame/{{ p.id }}"
+                        class="btn btn-danger w-100 mb-2"
+                        onclick="return confirm('確定花費 100 金幣幫此商品套用特殊框嗎？')"
+                    >
+                        ✨ 特殊框（100 金幣）
+                    </a>
+
+                {% endif %}
+
+                <form
+                    action="/toggle-product-status/{{ p.id }}"
+                    method="POST"
+                    class="mb-2"
+                >
+                    {% if p.is_paused == 1 %}
+                        <button class="btn btn-success w-100">
+                            ▶️ 恢復販售
+                        </button>
+                    {% else %}
+                        <button
+                            class="btn btn-secondary w-100"
+                            onclick="return confirm('確定要暫停販售此商品嗎？')"
+                        >
+                            ⏸️ 暫停販售
+                        </button>
+                    {% endif %}
+                </form>
+
+                <a
+                    href="/edit-product/{{ p.id }}"
+                    class="btn btn-warning w-100 mb-2"
+                >
+                    編輯商品
+                </a>
+
+                <a
+                    href="/delete-product/{{ p.id }}"
+                    class="btn btn-danger w-100"
+                    onclick="return confirm('確定要刪除商品嗎？')"
+                >
+                    刪除商品
+                </a>
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

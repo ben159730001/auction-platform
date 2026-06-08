@@ -1,0 +1,390 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<div class="live-page">
+
+    <div class="live-header">
+
+        <h1>🔴 直播競標室</h1>
+
+        <h3 id="liveTitle">
+    {{ live_title }}
+</h3>
+
+<button
+    class="btn btn-warning btn-sm"
+    onclick="editTitle()"
+>
+    ✏️ 修改標題
+</button>
+
+        <span class="live-badge">
+            LIVE
+        </span>
+
+    </div>
+
+    <div class="live-layout">
+
+        <div class="live-main">
+
+            <div class="video-box">
+
+    <video
+        id="localVideo"
+        autoplay
+        muted
+        playsinline
+    ></video>
+
+</div>
+
+<div class="mt-2">
+
+    <button
+        class="btn btn-primary"
+        onclick="startCamera()"
+    >
+        📷 開啟鏡頭
+    </button>
+
+    <button
+        class="btn btn-success"
+        onclick="shareScreen()"
+    >
+        🖥 分享畫面
+    </button>
+
+    <button
+        class="btn btn-warning"
+        onclick="toggleMic()"
+    >
+        🎤 麥克風
+    </button>
+
+</div>
+
+            <div class="live-host-box">
+
+                <div class="host-avatar">
+                    🎤
+                </div>
+
+                <div>
+                    <h2>主播模式</h2>
+                    <p>歡迎來到校園直播競標，快來即時喊價！</p>
+                </div>
+
+            </div>
+
+            <div class="live-carousel">
+
+                {% for p in products %}
+
+                    <div
+                        class="live-product-card {% if loop.first %}active{% endif %}"
+                        data-index="{{ loop.index0 }}"
+                    >
+
+                        <img
+                            src="{{ p.image }}"
+                            class="live-product-image"
+                        >
+
+                        <div class="live-product-info">
+
+                            <h2>{{ p.title }}</h2>
+
+                            <p>
+                                賣家：{{ p.username }}
+                            </p>
+
+                            <h3>
+                                NT$ {{ p.current_price }}
+                            </h3>
+
+                            <a
+                                href="/product/{{ p.id }}"
+                                class="btn btn-shopee"
+                            >
+                                進入競標
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+       <div class="live-side">
+
+    <h3>💬 直播聊天室</h3>
+
+    <div class="mb-3">
+
+        👥 在線人數：
+
+        <span id="onlineCount">
+            0
+        </span>
+
+    </div>
+
+    <div
+        id="liveMessages"
+        class="live-messages"
+    ></div>
+
+            {% if session.get("username") %}
+
+                <div class="live-chat-input">
+
+                    <input
+                        id="liveInput"
+                        class="form-control"
+                        placeholder="輸入直播訊息..."
+                    >
+
+                    <button
+                        class="btn btn-shopee"
+                        onclick="sendLiveMessage()"
+                    >
+                        送出
+                    </button>
+
+                </div>
+
+            {% else %}
+
+                <p class="text-muted">
+                    請先登入才能聊天。
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const socket = io();
+let currentStream = null;
+let micEnabled = true;
+
+async function startCamera(){
+
+    try{
+
+        const stream =
+            await navigator.mediaDevices.getUserMedia({
+                video:true,
+                audio:true
+            });
+
+        replaceStream(stream);
+
+    }catch(err){
+
+        alert("無法開啟攝影機");
+
+    }
+
+}
+
+async function shareScreen(){
+
+    try{
+
+        const stream =
+            await navigator.mediaDevices.getDisplayMedia({
+                video:true,
+                audio:false
+            });
+
+        replaceStream(stream);
+
+    }catch(err){
+
+        alert("分享畫面失敗");
+
+    }
+
+}
+
+function replaceStream(stream){
+
+    if(currentStream){
+
+        currentStream
+            .getTracks()
+            .forEach(track => track.stop());
+
+    }
+
+    currentStream = stream;
+
+    document
+        .getElementById("localVideo")
+        .srcObject = stream;
+
+}
+
+function toggleMic(){
+
+    if(!currentStream){
+        return;
+    }
+
+    micEnabled = !micEnabled;
+
+    currentStream
+        .getAudioTracks()
+        .forEach(track => {
+
+            track.enabled = micEnabled;
+
+        });
+
+}
+
+function editTitle(){
+
+    const currentTitle =
+        document.getElementById("liveTitle")
+        .innerText;
+
+    const newTitle =
+        prompt(
+            "請輸入新的直播標題",
+            currentTitle
+        );
+
+    if(!newTitle){
+        return;
+    }
+
+    fetch(
+        "/live/update_title",
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                title:newTitle
+            })
+        }
+    )
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.success){
+
+            document.getElementById("liveTitle")
+                .innerText = data.title;
+
+        }
+
+    });
+
+}
+
+socket.emit(
+    "join_product",
+    {
+        product_id: "live_room"
+    }
+);
+socket.on(
+    "online_count",
+    function(data){
+
+        document.getElementById(
+            "onlineCount"
+        ).innerText = data.count;
+
+    }
+);
+socket.on("new_message", function(data){
+
+    const box =
+        document.getElementById("liveMessages");
+
+    const div =
+        document.createElement("div");
+
+    div.className =
+        "live-message";
+
+    div.innerHTML =
+        "<strong>" + data.username + "：</strong> "
+        + data.message
+        + "<small>" + data.time + "</small>";
+
+    box.appendChild(div);
+
+    box.scrollTop =
+        box.scrollHeight;
+
+});
+
+function sendLiveMessage(){
+
+    const input =
+        document.getElementById("liveInput");
+
+    if(!input){
+        return;
+    }
+
+    const message =
+        input.value.trim();
+
+    if(message === ""){
+        return;
+    }
+
+    socket.emit(
+    "send_message",
+    {
+        product_id: "live_room",
+        message: message
+    }
+);
+
+    input.value = "";
+
+}
+
+const cards =
+    document.querySelectorAll(".live-product-card");
+
+let currentIndex = 0;
+
+setInterval(function(){
+
+    if(cards.length === 0){
+        return;
+    }
+
+    cards[currentIndex].classList.remove("active");
+
+    currentIndex =
+        (currentIndex + 1) % cards.length;
+
+    cards[currentIndex].classList.add("active");
+
+}, 4000);
+
+</script>
+
+{% endblock %}

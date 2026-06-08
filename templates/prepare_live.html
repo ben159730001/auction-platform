@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>
+        🔴 直播準備室
+    </h2>
+
+    <h4>
+        {{ product.title }}
+    </h4>
+
+    <hr>
+
+    <video
+        id="previewVideo"
+        autoplay
+        muted
+        playsinline
+        style="
+            width:100%;
+            max-height:500px;
+            background:black;
+        "
+    ></video>
+
+    <div class="mt-3">
+
+        <button
+            class="btn btn-primary"
+            onclick="openCamera()"
+        >
+            📷 開啟鏡頭
+        </button>
+
+        <button
+            class="btn btn-success"
+            onclick="shareScreen()"
+        >
+            🖥 擷取螢幕
+        </button>
+
+        <button
+            class="btn btn-warning"
+            onclick="toggleMic()"
+        >
+            🎤 麥克風開關
+        </button>
+
+    </div>
+
+    <hr>
+
+    <a
+        href="/go_live/{{ product.id }}"
+        class="btn btn-danger btn-lg"
+    >
+        🚀 正式開始直播
+    </a>
+
+</div>
+
+<script>
+
+let currentStream = null;
+
+async function openCamera(){
+
+    currentStream =
+    await navigator.mediaDevices.getUserMedia({
+        video:true,
+        audio:true
+    });
+
+    document.getElementById(
+        "previewVideo"
+    ).srcObject = currentStream;
+}
+
+async function shareScreen(){
+
+    currentStream =
+    await navigator.mediaDevices.getDisplayMedia({
+        video:true,
+        audio:true
+    });
+
+    document.getElementById(
+        "previewVideo"
+    ).srcObject = currentStream;
+}
+
+function toggleMic(){
+
+    if(!currentStream) return;
+
+    currentStream
+        .getAudioTracks()
+        .forEach(track => {
+
+            track.enabled =
+            !track.enabled;
+
+        });
+}
+
+</script>
+
+{% endblock %}

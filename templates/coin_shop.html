@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>💰 金幣商城</h2>
+
+    <div class="card p-4 mt-3">
+
+        <h4>🎟️ 100 元折價券</h4>
+
+        <p>
+            使用 1000 金幣兌換 100 元折價券。
+        </p>
+
+        <a
+            href="/exchange-coupon"
+            class="btn btn-shopee"
+            onclick="return confirm('確定花費 1000 金幣兌換 100 元折價券嗎？')"
+        >
+            兌換折價券
+        </a>
+
+    </div>
+
+    <div class="card p-4 mt-3">
+
+        <h4>🚀 商品置頂 24 小時</h4>
+
+        <p>
+            使用 500 金幣，讓你的商品在首頁優先顯示 24 小時。
+        </p>
+
+        <a
+            href="/my-products"
+            class="btn btn-warning"
+        >
+            前往我的商品選擇置頂
+        </a>
+
+    </div>
+
+    <div class="card p-4 mt-3">
+
+        <h4>✨ 特殊框</h4>
+
+        <p>
+            使用 100 金幣，讓商品卡片出現醒目的特殊外框。
+        </p>
+
+        <a
+            href="/my-products"
+            class="btn btn-danger"
+        >
+            前往我的商品套用特殊框
+        </a>
+
+    </div>
+
+    <hr>
+
+    <h3>我的折價券</h3>
+
+    {% for c in coupons %}
+
+        <div class="card p-3 mb-2">
+
+            🎟️ {{ c.discount }} 元折價券
+
+            {% if c.is_used == 1 %}
+                <span class="text-muted">已使用</span>
+            {% else %}
+                <span class="text-success">可使用</span>
+            {% endif %}
+
+        </div>
+
+    {% else %}
+
+        <p class="text-muted">
+            目前沒有折價券。
+        </p>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

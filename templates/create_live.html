@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>🎥 建立直播</h2>
+
+    <hr>
+
+    <form method="POST">
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                直播標題
+            </label>
+
+            <input
+                type="text"
+                name="title"
+                class="form-control"
+                placeholder="請輸入直播標題"
+                required
+            >
+
+        </div>
+
+        <button
+            type="submit"
+            class="btn btn-danger btn-lg"
+        >
+            🔴 立即開始直播
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}
