@@ -1,0 +1,101 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<style>
+.identity-card{
+    background:white;
+    border-radius:20px;
+    padding:24px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.08);
+    max-width:760px;
+    margin:0 auto 24px;
+}
+.identity-status{
+    display:inline-block;
+    padding:6px 12px;
+    border-radius:999px;
+    font-weight:900;
+}
+.status-ok{background:#dcfce7;color:#166534;}
+.status-pending{background:#fef3c7;color:#92400e;}
+.status-danger{background:#fee2e2;color:#991b1b;}
+.status-muted{background:#e5e7eb;color:#374151;}
+.identity-note{
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:16px;
+    color:#9a3412;
+    font-weight:700;
+}
+</style>
+
+<div class="identity-card">
+    <h1>🪪 身分驗證</h1>
+
+    <div class="identity-note">
+        請上傳學生證或可證明校園身分的圖片。資料只提供管理員審核，不會公開顯示。
+    </div>
+
+    <p>
+        目前狀態：
+        {% if user.identity_verified == 1 %}
+            <span class="identity-status status-ok">已身分驗證</span>
+        {% elif user.identity_verify_status == "待審核" %}
+            <span class="identity-status status-pending">待審核</span>
+        {% elif user.identity_verify_status == "已駁回" %}
+            <span class="identity-status status-danger">已駁回</span>
+        {% else %}
+            <span class="identity-status status-muted">未申請</span>
+        {% endif %}
+    </p>
+
+    {% if user.identity_verify_status == "已駁回" and user.identity_reject_reason %}
+        <div class="alert alert-danger">
+            駁回原因：{{ user.identity_reject_reason }}
+        </div>
+    {% endif %}
+
+    {% if latest %}
+        <h3>最近一次申請</h3>
+        <p>姓名：{{ latest.real_name }}</p>
+        <p>學號：{{ latest.student_id }}</p>
+        <p>系所：{{ latest.department }}</p>
+        <p>申請時間：{{ latest.created_at }}</p>
+        <p>審核狀態：{{ latest.status }}</p>
+        {% if latest.document_image %}
+            <p><a href="{{ latest.document_image }}" target="_blank" class="btn btn-secondary">查看已上傳圖片</a></p>
+        {% endif %}
+    {% endif %}
+
+    {% if user.identity_verified != 1 %}
+    <hr>
+
+    <form method="POST" action="/identity-verify" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">真實姓名</label>
+            <input name="real_name" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">學號</label>
+            <input name="student_id" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">系所</label>
+            <input name="department" class="form-control" placeholder="例如：資訊工程系" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">學生證 / 身分證明圖片</label>
+            <input type="file" name="document_image" class="form-control" accept="image/*" required>
+        </div>
+
+        <button class="btn btn-shopee">送出身分驗證</button>
+    </form>
+    {% endif %}
+</div>
+
+{% endblock %}

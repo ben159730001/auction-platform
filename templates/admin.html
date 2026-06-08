@@ -201,6 +201,68 @@
     </table>
 </div>
 {% endif %}
+{% if current_admin_role in ["super_admin", "review_admin"] %}
+<div class="admin-section">
+    <h2>🪪 身分驗證審核</h2>
+    <table class="admin-table">
+        <tr>
+            <th>ID</th>
+            <th>帳號</th>
+            <th>Email</th>
+            <th>姓名</th>
+            <th>學號</th>
+            <th>系所</th>
+            <th>證件</th>
+            <th>狀態</th>
+            <th>時間</th>
+            <th>操作</th>
+        </tr>
+
+        {% for v in identity_requests %}
+        <tr>
+            <td>{{ v.id }}</td>
+            <td>{{ v.username or '未知使用者' }}</td>
+            <td>{{ v.email or '-' }}</td>
+            <td>{{ v.real_name }}</td>
+            <td>{{ v.student_id }}</td>
+            <td>{{ v.department }}</td>
+            <td>
+                {% if v.document_image %}
+                    <a href="{{ v.document_image }}" target="_blank" class="admin-view-btn">查看</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if v.status == "已通過" %}
+                    <span class="admin-badge badge-ok">已通過</span>
+                {% elif v.status == "已駁回" %}
+                    <span class="admin-badge badge-danger">已駁回</span>
+                    <div class="text-muted">{{ v.reject_reason or '' }}</div>
+                {% else %}
+                    <span class="admin-badge badge-warn">待審核</span>
+                {% endif %}
+            </td>
+            <td>{{ v.created_at }}</td>
+            <td>
+                {% if v.status == "待審核" %}
+                <form method="POST" action="/admin/review-identity/{{ v.id }}" style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <input name="reject_reason" class="form-control" placeholder="駁回原因" style="min-width:140px;">
+                    <button name="action" value="approve" class="admin-view-btn" onclick="return confirm('確定通過此身分驗證嗎？')">通過</button>
+                    <button name="action" value="reject" class="admin-delete-btn" onclick="return confirm('確定駁回此身分驗證嗎？')">駁回</button>
+                </form>
+                {% else %}
+                    已審核
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="10">目前沒有身分驗證申請。</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
 
 {% if current_admin_role == "super_admin" %}
 <div class="admin-section">

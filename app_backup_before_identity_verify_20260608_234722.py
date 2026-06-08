@@ -816,37 +816,6 @@ def create_reports_table():
         """
     )
 
-
-    # 身分驗證功能：使用者上傳學生證/證件，管理員審核
-    for sql in [
-        "ALTER TABLE users ADD COLUMN identity_verified INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN identity_verify_status TEXT DEFAULT '未申請'",
-        "ALTER TABLE users ADD COLUMN identity_reject_reason TEXT",
-        "ALTER TABLE users ADD COLUMN identity_verified_at TEXT"
-    ]:
-        try:
-            db.execute(sql)
-        except sqlite3.OperationalError:
-            pass
-
-    db.execute(
-        """
-        CREATE TABLE IF NOT EXISTS identity_verifications (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            real_name TEXT,
-            student_id TEXT,
-            department TEXT,
-            document_image TEXT,
-            status TEXT DEFAULT '待審核',
-            reject_reason TEXT,
-            created_at TEXT,
-            reviewed_at TEXT,
-            reviewed_by INTEGER
-        )
-        """
-    )
-
     # 後台進階功能：停權、商品下架、金幣紀錄、公告
     ensure_admin_feature_columns(db)
 
@@ -2074,208 +2043,6 @@ def login():
 def logout():
     session.clear()
     return redirect("/")
-
-
-
-@app.route("/identity-verify", methods=["GET", "POST"])
-def identity_verify():
-    if "user_id" not in session:
-        return redirect("/login")
-
-    db = get_db()
-
-    user = db.execute(
-        "SELECT * FROM users WHERE id=?",
-        (session["user_id"],)
-    ).fetchone()
-
-    latest = db.execute(
-        """
-        SELECT *
-        FROM identity_verifications
-        WHERE user_id=?
-        ORDER BY id DESC
-        LIMIT 1
-        """,
-        (session["user_id"],)
-    ).fetchone()
-
-    if request.method == "POST":
-        real_name = request.form.get("real_name", "").strip()
-        student_id = request.form.get("student_id", "").strip()
-        department = request.form.get("department", "").strip()
-        document_file = request.files.get("document_image")
-
-        if not real_name or not student_id or not department:
-            db.close()
-            flash("請完整填寫真實姓名、學號與系所", "danger")
-            return redirect("/identity-verify")
-
-        image_path = save_uploaded_image(document_file)
-
-        if not image_path:
-            db.close()
-            flash("請上傳學生證或身分證明圖片", "danger")
-            return redirect("/identity-verify")
-
-        db.execute(
-            """
-            INSERT INTO identity_verifications(
-                user_id,
-                real_name,
-                student_id,
-                department,
-                document_image,
-                status,
-                created_at
-            )
-            VALUES (?, ?, ?, ?, ?, '待審核', ?)
-            """,
-            (
-                session["user_id"],
-                real_name,
-                student_id,
-                department,
-                image_path,
-                now_text()
-            )
-        )
-
-        db.execute(
-            """
-            UPDATE users
-            SET identity_verify_status='待審核',
-                identity_reject_reason=NULL
-            WHERE id=?
-            """,
-            (session["user_id"],)
-        )
-
-        db.commit()
-        db.close()
-
-        flash("身分驗證已送出，請等待管理員審核", "success")
-        return redirect("/identity-verify")
-
-    db.close()
-
-    return render_template(
-        "identity_verify.html",
-        user=user,
-        latest=latest
-    )
-
-
-@app.route("/admin/review-identity/<int:verify_id>", methods=["POST"])
-def admin_review_identity(verify_id):
-    if not require_admin_role("review_admin"):
-        return "權限不足：只有審核管理員或超級管理員可以審核身分驗證"
-
-    action = request.form.get("action")
-    reject_reason = request.form.get("reject_reason", "").strip()
-
-    db = get_db()
-
-    verify = db.execute(
-        """
-        SELECT *
-        FROM identity_verifications
-        WHERE id=?
-        """,
-        (verify_id,)
-    ).fetchone()
-
-    if verify is None:
-        db.close()
-        return "找不到身分驗證申請"
-
-    if action == "approve":
-        db.execute(
-            """
-            UPDATE identity_verifications
-            SET status='已通過',
-                reject_reason=NULL,
-                reviewed_at=?,
-                reviewed_by=?
-            WHERE id=?
-            """,
-            (
-                now_text(),
-                session["user_id"],
-                verify_id
-            )
-        )
-
-        db.execute(
-            """
-            UPDATE users
-            SET identity_verified=1,
-                identity_verify_status='已通過',
-                identity_reject_reason=NULL,
-                identity_verified_at=?
-            WHERE id=?
-            """,
-            (
-                now_text(),
-                verify["user_id"]
-            )
-        )
-
-        create_notification_realtime(
-            verify["user_id"],
-            "✅ 你的身分驗證已通過，現在可以安心交易。",
-            "/profile/" + str(verify["user_id"])
-        )
-
-        flash("已通過身分驗證", "success")
-
-    elif action == "reject":
-        if not reject_reason:
-            reject_reason = "資料不清楚或不符合平台規範"
-
-        db.execute(
-            """
-            UPDATE identity_verifications
-            SET status='已駁回',
-                reject_reason=?,
-                reviewed_at=?,
-                reviewed_by=?
-            WHERE id=?
-            """,
-            (
-                reject_reason,
-                now_text(),
-                session["user_id"],
-                verify_id
-            )
-        )
-
-        db.execute(
-            """
-            UPDATE users
-            SET identity_verified=0,
-                identity_verify_status='已駁回',
-                identity_reject_reason=?
-            WHERE id=?
-            """,
-            (
-                reject_reason,
-                verify["user_id"]
-            )
-        )
-
-        create_notification_realtime(
-            verify["user_id"],
-            "❌ 你的身分驗證未通過：" + reject_reason,
-            "/identity-verify"
-        )
-
-        flash("已駁回身分驗證", "success")
-
-    db.commit()
-    db.close()
-
-    return redirect("/admin")
 
 
 @app.route("/forgot-password", methods=["GET", "POST"])
@@ -3689,9 +3456,10 @@ def profile(user_id):
         "review_count": review_count,
         "reply_speed": "普通",
         "meetup_success_rate": 100 if int(sold_count or 0) > 0 else 0,
-        "identity_badge": "已身分驗證" if (
-            "identity_verified" in user.keys()
-            and int(user["identity_verified"] or 0) == 1
+        "identity_badge": "已驗證" if (
+            "email" in user.keys()
+            and user["email"]
+            and user["email"].endswith("@gm.student.ncut.edu.tw")
         ) else "一般會員"
     }
 
@@ -5106,20 +4874,6 @@ def admin():
         """
     ).fetchall()
 
-
-    identity_requests = db.execute(
-        """
-        SELECT
-            identity_verifications.*,
-            users.username,
-            users.email
-        FROM identity_verifications
-        LEFT JOIN users ON identity_verifications.user_id = users.id
-        ORDER BY identity_verifications.id DESC
-        LIMIT 200
-        """
-    ).fetchall()
-
     coin_logs = db.execute(
         """
         SELECT coin_logs.*, users.username
@@ -5185,7 +4939,6 @@ def admin():
         questions=questions,
         coin_logs=coin_logs,
         announcements=announcements,
-        identity_requests=identity_requests,
         stats=stats,
         keyword=keyword,
         report_status=report_status,
