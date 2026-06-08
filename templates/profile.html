@@ -2,6 +2,7 @@
 {% block content %}
 
 <style>
+    
 .profile-cover{
     height:230px;
     border-radius:24px;
@@ -60,6 +61,41 @@
     font-size:18px;
     margin-top:3px;
 }
+.identity-action-box{
+    margin-top:14px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+.identity-badge{
+    display:inline-block;
+    padding:7px 13px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:14px;
+}
+.identity-ok{
+    background:#dcfce7;
+    color:#166534;
+}
+.identity-pending{
+    background:#fef3c7;
+    color:#92400e;
+}
+.identity-danger{
+    background:#fee2e2;
+    color:#991b1b;
+}
+.identity-muted{
+    background:#e5e7eb;
+    color:#374151;
+}
+.identity-small-note{
+    font-size:13px;
+    color:#777;
+    font-weight:700;
+}
 @media(max-width:768px){
     .trust-panel{
         grid-template-columns:1fr;
@@ -70,6 +106,9 @@
 
 {% set banner_url = user["banner"] if "banner" in user.keys() and user["banner"] else "/static/default-banner.png" %}
 {% set avatar_url = user["avatar"] if "avatar" in user.keys() and user["avatar"] else "/static/default-avatar.png" %}
+{% set identity_verified = user["identity_verified"] if "identity_verified" in user.keys() and user["identity_verified"] else 0 %}
+{% set identity_status = user["identity_verify_status"] if "identity_verify_status" in user.keys() and user["identity_verify_status"] else "未申請" %}
+{% set identity_reject_reason = user["identity_reject_reason"] if "identity_reject_reason" in user.keys() and user["identity_reject_reason"] else "" %}
 
 <div class="container mt-4">
 
@@ -92,6 +131,26 @@
                 <h2 style="font-size:35px;">
                     👤 {{ user["username"] }}
                 </h2>
+
+                <div class="identity-action-box">
+                    {% if identity_verified == 1 %}
+                        <span class="identity-badge identity-ok">🪪 已身分驗證</span>
+                    {% elif session.get("user_id") == user["id"] and identity_status == "待審核" %}
+                        <span class="identity-badge identity-pending">🪪 身分驗證審核中</span>
+                        <span class="identity-small-note">管理員審核後會通知你</span>
+                    {% elif session.get("user_id") == user["id"] and identity_status == "已駁回" %}
+                        <span class="identity-badge identity-danger">🪪 身分驗證未通過</span>
+                        <a href="/identity-verify" class="btn btn-sm btn-warning">重新申請</a>
+                        {% if identity_reject_reason %}
+                            <span class="identity-small-note">原因：{{ identity_reject_reason }}</span>
+                        {% endif %}
+                    {% elif session.get("user_id") == user["id"] %}
+                        <a href="/identity-verify" class="btn btn-shopee btn-sm">🪪 申請身分驗證</a>
+                        <span class="identity-small-note">通過後會顯示在個人頁，提升交易信任度</span>
+                    {% else %}
+                        <span class="identity-badge identity-muted">🪪 尚未身分驗證</span>
+                    {% endif %}
+                </div>
 
                 {% if session.get("user_id") == user["id"] %}
                     <a href="/profile/edit" class="btn btn-outline-primary btn-sm mt-2">
@@ -145,8 +204,23 @@
 
                 <div class="trust-panel">
                     <div class="trust-card">
-                        🟢 身分驗證
+                        🟢 信箱驗證
                         <strong>{% if trust_stats["email_verified"]|default(false) %}已驗證 NCUT 信箱{% else %}尚未驗證{% endif %}</strong>
+                    </div>
+
+                    <div class="trust-card">
+                        🪪 身分驗證
+                        <strong>
+                            {% if identity_verified == 1 %}
+                                已通過
+                            {% elif identity_status == "待審核" and session.get("user_id") == user["id"] %}
+                                審核中
+                            {% elif identity_status == "已駁回" and session.get("user_id") == user["id"] %}
+                                未通過
+                            {% else %}
+                                尚未驗證
+                            {% endif %}
+                        </strong>
                     </div>
 
                     <div class="trust-card">
@@ -162,11 +236,6 @@
                     <div class="trust-card">
                         ⚡ 回覆速度
                         <strong>{{ trust_stats["reply_speed"]|default("普通") }}</strong>
-                    </div>
-
-                    <div class="trust-card">
-                        🤝 面交成功率
-                        <strong>{{ trust_stats["meetup_success_rate"]|default(0) }}%</strong>
                     </div>
 
                     <div class="trust-card">
