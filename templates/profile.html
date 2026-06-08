@@ -2,7 +2,7 @@
 {% block content %}
 
 <style>
-    
+
 .profile-cover{
     height:230px;
     border-radius:24px;
@@ -134,21 +134,31 @@
 
                 <div class="identity-action-box">
                     {% if identity_verified == 1 %}
-                        <span class="identity-badge identity-ok">🪪 已身分驗證</span>
+                        <span class="identity-badge identity-ok">
+                            🛡️🪪 已身分驗證
+                        </span>
                     {% elif session.get("user_id") == user["id"] and identity_status == "待審核" %}
-                        <span class="identity-badge identity-pending">🪪 身分驗證審核中</span>
+                        <span class="identity-badge identity-pending">
+                            ⏳🪪 身分驗證審核中
+                        </span>
                         <span class="identity-small-note">管理員審核後會通知你</span>
                     {% elif session.get("user_id") == user["id"] and identity_status == "已駁回" %}
-                        <span class="identity-badge identity-danger">🪪 身分驗證未通過</span>
+                        <span class="identity-badge identity-danger">
+                            ❌🪪 身分驗證未通過
+                        </span>
                         <a href="/identity-verify" class="btn btn-sm btn-warning">重新申請</a>
                         {% if identity_reject_reason %}
                             <span class="identity-small-note">原因：{{ identity_reject_reason }}</span>
                         {% endif %}
                     {% elif session.get("user_id") == user["id"] %}
-                        <a href="/identity-verify" class="btn btn-shopee btn-sm">🪪 申請身分驗證</a>
+                        <a href="/identity-verify" class="btn btn-shopee btn-sm">
+                            🛡️🪪 申請身分驗證
+                        </a>
                         <span class="identity-small-note">通過後會顯示在個人頁，提升交易信任度</span>
                     {% else %}
-                        <span class="identity-badge identity-muted">🪪 尚未身分驗證</span>
+                        <span class="identity-badge identity-muted">
+                            🔒🪪 尚未身分驗證
+                        </span>
                     {% endif %}
                 </div>
 
@@ -209,7 +219,7 @@
                     </div>
 
                     <div class="trust-card">
-                        🪪 身分驗證
+                        🛡️🪪 身分驗證
                         <strong>
                             {% if identity_verified == 1 %}
                                 已通過
