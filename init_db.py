@@ -110,16 +110,6 @@ CREATE TABLE IF NOT EXISTS reviews (
 """)
 
 cursor.execute("""
-CREATE TABLE IF NOT EXISTS auto_bids (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id INTEGER,
-    user_id INTEGER,
-    max_price INTEGER,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
-""")
-
-cursor.execute("""
 CREATE TABLE IF NOT EXISTS private_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sender_id INTEGER,

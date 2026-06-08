@@ -1206,8 +1206,7 @@ function showLatestBid(data){
     const bidder =
         data.username || "神秘競標者";
 
-    const autoText =
-        data.is_auto_bid ? " 🤖 自動出價反擊" : "";
+  const autoText = "";;
 
     textBox.innerHTML =
         "🔥 " + escapeHtml(bidder) + autoText + " 出價 NT$ " + data.price;

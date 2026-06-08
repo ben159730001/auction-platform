@@ -5,7 +5,6 @@ from datetime import datetime, timedelta, timezone
 import os
 import uuid
 import random
-import secrets
 import smtplib
 from email.mime.text import MIMEText
 
@@ -773,49 +772,6 @@ def create_reports_table():
     )
 
 
-
-    # 防詐騙機制欄位：Email 驗證、手機驗證、風險分數、IP、異常出價
-    for sql in [
-        "ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN email_verify_token TEXT",
-        "ALTER TABLE users ADD COLUMN phone TEXT",
-        "ALTER TABLE users ADD COLUMN phone_verified INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN risk_score INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN created_at TEXT",
-        "ALTER TABLE users ADD COLUMN last_ip TEXT",
-        "ALTER TABLE bids ADD COLUMN ip_address TEXT",
-        "ALTER TABLE bids ADD COLUMN is_suspicious INTEGER DEFAULT 0",
-        "ALTER TABLE bids ADD COLUMN risk_reason TEXT"
-    ]:
-        try:
-            db.execute(sql)
-        except sqlite3.OperationalError:
-            pass
-
-    try:
-        db.execute(
-            """
-            UPDATE users
-            SET created_at=?
-            WHERE created_at IS NULL OR created_at=''
-            """,
-            (now_text(),)
-        )
-    except sqlite3.OperationalError:
-        pass
-
-    db.execute(
-        """
-        CREATE TABLE IF NOT EXISTS risk_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            reason TEXT,
-            score_added INTEGER DEFAULT 0,
-            created_at TEXT
-        )
-        """
-    )
-
     # 後台進階功能：停權、商品下架、金幣紀錄、公告
     ensure_admin_feature_columns(db)
 
@@ -1013,154 +969,6 @@ def send_reset_code_email(email, code):
         server.send_message(msg)
 
     return True
-
-
-def send_verify_email(email, token):
-    """
-    寄出 Email 驗證信。
-    如果沒有設定 MAIL_USERNAME / MAIL_PASSWORD，會進入展示模式：
-    不寄信，但會在 Render logs / 終端機印出驗證連結。
-    """
-    mail_username = os.environ.get("MAIL_USERNAME")
-    mail_password = os.environ.get("MAIL_PASSWORD")
-    mail_server = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
-    mail_port = int(os.environ.get("MAIL_PORT", "587"))
-
-    verify_link = f"{request.host_url.rstrip('/')}/verify-email/{token}"
-
-    if not mail_username or not mail_password:
-        print("Email 驗證連結：", verify_link)
-        return False
-
-    subject = "校園拍賣平台 Email 驗證"
-    body = f"""請點擊以下連結完成 Email 驗證：
-
-{verify_link}
-
-如果不是你本人註冊，請忽略此信件。
-"""
-
-    msg = MIMEText(body, "plain", "utf-8")
-    msg["Subject"] = subject
-    msg["From"] = mail_username
-    msg["To"] = email
-
-    with smtplib.SMTP(mail_server, mail_port) as server:
-        server.starttls()
-        server.login(mail_username, mail_password)
-        server.send_message(msg)
-
-    return True
-
-
-def add_risk_log(db, user_id, reason, score):
-    """增加使用者風險分數，超過 80 自動停權。"""
-    db.execute(
-        """
-        INSERT INTO risk_logs(user_id, reason, score_added, created_at)
-        VALUES (?, ?, ?, ?)
-        """,
-        (user_id, reason, score, now_text())
-    )
-
-    db.execute(
-        """
-        UPDATE users
-        SET risk_score = IFNULL(risk_score, 0) + ?
-        WHERE id=?
-        """,
-        (score, user_id)
-    )
-
-    total = db.execute(
-        "SELECT IFNULL(risk_score, 0) AS risk_score FROM users WHERE id=?",
-        (user_id,)
-    ).fetchone()
-
-    if total and int(total["risk_score"] or 0) >= 80:
-        db.execute(
-            """
-            UPDATE users
-            SET is_banned=1,
-                ban_reason='系統偵測高風險異常行為'
-            WHERE id=?
-            """,
-            (user_id,)
-        )
-
-
-def check_bid_risk(db, user_id, product_id, bid_price):
-    """出價前風控：Email 驗證、新帳號限制、短時間大量出價、同 IP 多帳號。"""
-    user = db.execute(
-        "SELECT * FROM users WHERE id=?",
-        (user_id,)
-    ).fetchone()
-
-    if user is None:
-        return False, "找不到使用者"
-
-    if "email_verified" in user.keys() and int(user["email_verified"] or 0) != 1:
-        return False, "請先完成 Email 驗證才能出價"
-
-    if "risk_score" in user.keys() and int(user["risk_score"] or 0) >= 80:
-        return False, "你的帳號風險過高，已限制出價"
-
-    now = datetime.now(TAIWAN_TIMEZONE).replace(tzinfo=None)
-    created_at_text = user["created_at"] if "created_at" in user.keys() else None
-
-    if created_at_text:
-        try:
-            created_at = datetime.strptime(created_at_text, "%Y-%m-%d %H:%M:%S")
-            account_age = now - created_at
-
-            if account_age < timedelta(days=1):
-                today_bid_count = db.execute(
-                    """
-                    SELECT COUNT(*) AS count
-                    FROM bids
-                    WHERE user_id=?
-                    AND datetime(created_at) >= datetime('now', '+8 hours', '-24 hours')
-                    """,
-                    (user_id,)
-                ).fetchone()["count"]
-
-                if today_bid_count >= 3:
-                    add_risk_log(db, user_id, "新帳號 24 小時內出價過多", 20)
-                    return False, "新帳號 24 小時內最多只能出價 3 次"
-        except Exception:
-            pass
-
-    five_min_count = db.execute(
-        """
-        SELECT COUNT(*) AS count
-        FROM bids
-        WHERE user_id=?
-        AND datetime(created_at) >= datetime('now', '+8 hours', '-5 minutes')
-        """,
-        (user_id,)
-    ).fetchone()["count"]
-
-    if five_min_count >= 10:
-        add_risk_log(db, user_id, "5 分鐘內大量出價", 30)
-        return False, "出價太頻繁，請稍後再試"
-
-    same_ip_users = db.execute(
-        """
-        SELECT COUNT(DISTINCT user_id) AS count
-        FROM bids
-        WHERE ip_address=?
-        AND datetime(created_at) >= datetime('now', '+8 hours', '-24 hours')
-        """,
-        (request.remote_addr,)
-    ).fetchone()["count"]
-
-    if same_ip_users >= 5:
-        add_risk_log(db, user_id, "同 IP 多帳號出價", 30)
-        return False, "系統偵測到異常出價行為"
-
-    return True, None
-
-
 
 
 def get_reset_code_age_minutes(created_at_text):
@@ -1898,35 +1706,23 @@ def register():
 
             return redirect("/register")
 
-        email_verify_token = secrets.token_urlsafe(32)
-
         cursor = db.execute(
             """
             INSERT INTO users(
                 username,
                 password,
                 email,
-                coins,
-                email_verified,
-                email_verify_token,
-                created_at
+                coins
             )
-            VALUES (?, ?, ?, ?, 0, ?, ?)
+            VALUES (?, ?, ?, ?)
             """,
             (
                 username,
                 password,
                 email,
-                2000,
-                email_verify_token,
-                now_text()
+                2000
             )
         )
-
-        try:
-            send_verify_email(email, email_verify_token)
-        except Exception as exc:
-            print("send verify email error:", exc)
 
         add_coin_log(db, cursor.lastrowid, 2000, "註冊獎勵")
 
@@ -1934,50 +1730,13 @@ def register():
         db.close()
 
         flash(
-            "🎉 註冊成功！已獲得 2000 金幣，請先完成 Email 驗證才能出價",
+            "🎉 註冊成功！已獲得 2000 金幣",
             "success"
         )
 
         return redirect("/login")
 
     return render_template("register.html")
-
-
-
-@app.route("/verify-email/<token>")
-def verify_email(token):
-    db = get_db()
-
-    user = db.execute(
-        """
-        SELECT *
-        FROM users
-        WHERE email_verify_token=?
-        """,
-        (token,)
-    ).fetchone()
-
-    if user is None:
-        db.close()
-        flash("驗證連結無效或已使用", "danger")
-        return redirect("/login")
-
-    db.execute(
-        """
-        UPDATE users
-        SET email_verified=1,
-            email_verify_token=NULL
-        WHERE id=?
-        """,
-        (user["id"],)
-    )
-
-    db.commit()
-    db.close()
-
-    flash("Email 驗證成功，現在可以出價了！", "success")
-    return redirect("/login")
-
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -2891,20 +2650,6 @@ def bid(id):
         flash(f"最低出價需為 NT$ {min_bid_price}，目前價格需至少加 {bid_increment} 元", "danger")
         return redirect(f"/product/{id}")
 
-    allowed, risk_message = check_bid_risk(
-        db,
-        session["user_id"],
-        id,
-        bid_price
-    )
-
-    if not allowed:
-        db.commit()
-        db.close()
-        flash(risk_message, "danger")
-        return redirect(f"/product/{id}")
-
-
     old_winner = db.execute(
         """
         SELECT * FROM bids
@@ -2917,15 +2662,14 @@ def bid(id):
 
     db.execute(
         """
-        INSERT INTO bids(product_id, user_id, bid_price, created_at, ip_address)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO bids(product_id, user_id, bid_price, created_at)
+        VALUES (?, ?, ?, ?)
         """,
         (
             id,
             session["user_id"],
             bid_price,
-            datetime.now(TAIWAN_TIMEZONE).strftime("%Y-%m-%d %H:%M:%S"),
-            request.remote_addr
+            datetime.now(TAIWAN_TIMEZONE).strftime("%Y-%m-%d %H:%M:%S")
         )
     )
 
@@ -2936,15 +2680,6 @@ def bid(id):
         WHERE id=?
         """,
         (bid_price, id)
-    )
-
-    db.execute(
-        """
-        UPDATE users
-        SET last_ip=?
-        WHERE id=?
-        """,
-        (request.remote_addr, session["user_id"])
     )
 
     bid_count = db.execute(
@@ -4893,27 +4628,6 @@ def admin():
         """
     ).fetchall()
 
-
-    risk_logs = db.execute(
-        """
-        SELECT risk_logs.*, users.username, users.email
-        FROM risk_logs
-        LEFT JOIN users ON risk_logs.user_id = users.id
-        ORDER BY risk_logs.id DESC
-        LIMIT 200
-        """
-    ).fetchall()
-
-    risk_users = db.execute(
-        """
-        SELECT *
-        FROM users
-        WHERE IFNULL(risk_score, 0) > 0
-        ORDER BY risk_score DESC
-        LIMIT 100
-        """
-    ).fetchall()
-
     stats = {
         "total_users": db.execute("SELECT COUNT(*) AS count FROM users").fetchone()["count"],
         "banned_users": db.execute("SELECT COUNT(*) AS count FROM users WHERE IFNULL(is_banned, 0)=1").fetchone()["count"],
@@ -4943,9 +4657,7 @@ def admin():
         keyword=keyword,
         report_status=report_status,
         product_status=product_status,
-        admin_roles=ADMIN_ROLES,
-        risk_logs=risk_logs,
-        risk_users=risk_users
+        admin_roles=ADMIN_ROLES
     )
 
 
