@@ -530,49 +530,7 @@
             </div>
         </div>
 
-<!-- 🤖 自動出價 -->
 
-{% if session.get("user_id") and session.get("user_id") != product.user_id and not is_ended %}
-
-<div class="auto-bid-box">
-
-    <h4 class="auto-bid-title">
-        🤖 自動競標機器人
-    </h4>
-
-    <p class="auto-bid-text">
-        系統會自動幫你競標直到最高金額
-    </p>
-
-    <form
-        method="POST"
-        action="/auto-bid/{{ product.id }}"
-        class="auto-bid-form"
-    >
-
-        <div class="input-group">
-
-            <input
-                name="max_price"
-                type="number"
-                class="form-control"
-                placeholder="設定最高出價，例如：5000"
-                required
-            >
-
-            <button class="btn btn-shopee">
-
-                🤖 啟用自動出價
-
-            </button>
-
-        </div>
-
-    </form>
-
-</div>
-
-{% endif %}
 
         <h4 id="online-users">
             👥 在線人數：0 人
