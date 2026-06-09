@@ -19,6 +19,22 @@ DATABASE = os.environ.get(
 )
 TAIWAN_TIMEZONE = timezone(timedelta(hours=8))
 
+
+# 會員等級 EXP 與達標金幣設定
+# exp_required：達到該 EXP 自動升級；reward_coins：第一次達到該級會自動發放金幣
+LEVEL_REWARDS = [
+    {"level": 1, "name": "新手賣家", "badge": "🌱", "exp_required": 0, "reward_coins": 0},
+    {"level": 2, "name": "優質賣家", "badge": "🥈", "exp_required": 500, "reward_coins": 1000},
+    {"level": 3, "name": "金牌賣家", "badge": "🥇", "exp_required": 1000, "reward_coins": 3000},
+    {"level": 4, "name": "鑽石賣家", "badge": "💎", "exp_required": 2000, "reward_coins": 5000},
+]
+
+EXP_ACTIONS = {
+    "上架商品": 50,
+    "評價賣家": 30,
+    "評價買家": 30,
+}
+
 # 管理員後台二次驗證密碼。
 # 本機預設為 admin123；正式部署請在 Render/Railway 設定環境變數 ADMIN_PANEL_PASSWORD。
 ADMIN_PANEL_PASSWORD = os.environ.get("ADMIN_PANEL_PASSWORD", "admin123")
@@ -446,6 +462,218 @@ def add_coin_log(db, user_id, amount, reason):
     )
 
 
+def get_level_info_by_exp(exp):
+    """依照經驗值回傳目前等級、下一級與進度。"""
+    exp = int(exp or 0)
+    current = LEVEL_REWARDS[0]
+
+    for item in LEVEL_REWARDS:
+        if exp >= item["exp_required"]:
+            current = item
+        else:
+            break
+
+    next_level = None
+    for item in LEVEL_REWARDS:
+        if item["exp_required"] > exp:
+            next_level = item
+            break
+
+    if next_level:
+        prev_required = current["exp_required"]
+        need_range = max(next_level["exp_required"] - prev_required, 1)
+        gained = exp - prev_required
+        progress = int(max(0, min(100, gained / need_range * 100)))
+        exp_to_next = next_level["exp_required"] - exp
+    else:
+        progress = 100
+        exp_to_next = 0
+
+    return {
+        "level": current["level"],
+        "name": current["name"],
+        "badge": current["badge"],
+        "exp": exp,
+        "exp_required": current["exp_required"],
+        "next_level": next_level,
+        "exp_to_next": exp_to_next,
+        "progress": progress,
+        "rewards": LEVEL_REWARDS,
+    }
+
+
+def grant_level_rewards(db, user_id, old_exp, new_exp):
+    """升級時發放一次性金幣獎勵。"""
+    awarded_messages = []
+
+    # 舊資料庫保底：金幣紀錄表
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS coin_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            amount INTEGER,
+            reason TEXT,
+            created_at TEXT
+        )
+        """
+    )
+
+    for item in LEVEL_REWARDS:
+        level = item["level"]
+        reward_coins = int(item.get("reward_coins") or 0)
+
+        if level <= 1 or reward_coins <= 0:
+            continue
+
+        if old_exp < item["exp_required"] <= new_exp:
+            existing = db.execute(
+                """
+                SELECT *
+                FROM level_reward_logs
+                WHERE user_id=? AND level=?
+                """,
+                (user_id, level)
+            ).fetchone()
+
+            if existing:
+                continue
+
+            db.execute(
+                """
+                UPDATE users
+                SET coins = IFNULL(coins, 0) + ?
+                WHERE id=?
+                """,
+                (reward_coins, user_id)
+            )
+
+            db.execute(
+                """
+                INSERT INTO coin_logs(user_id, amount, reason, created_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (user_id, reward_coins, f"達成{item['name']}等級獎勵", now_text())
+            )
+
+            reward_text = f"達成 {item['name']}，獲得 {reward_coins} 金幣"
+
+            db.execute(
+                """
+                INSERT INTO level_reward_logs(user_id, level, coupon_id, reward_text, created_at)
+                VALUES (?, ?, NULL, ?, ?)
+                """,
+                (user_id, level, reward_text, now_text())
+            )
+
+            # 不要在目前 db transaction 裡再開新連線呼叫 create_notification，避免 SQLite database is locked
+            db.execute(
+                """
+                INSERT INTO notifications(user_id, message, link, is_read, created_at)
+                VALUES (?, ?, ?, 0, ?)
+                """,
+                (user_id, "🎁 " + reward_text, "/profile/" + str(user_id), now_text())
+            )
+
+            awarded_messages.append(reward_text)
+
+    return awarded_messages
+
+def add_user_exp(db, user_id, amount, reason):
+    """增加使用者經驗值，升級時自動發金幣。"""
+    if user_id is None:
+        return None
+
+    amount = int(amount or 0)
+    if amount <= 0:
+        return None
+
+    # 舊資料庫保底
+    for sql in [
+        "ALTER TABLE users ADD COLUMN exp INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN level INTEGER DEFAULT 1"
+    ]:
+        try:
+            db.execute(sql)
+        except sqlite3.OperationalError:
+            pass
+
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS exp_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            amount INTEGER,
+            reason TEXT,
+            created_at TEXT
+        )
+        """
+    )
+
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS level_reward_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            level INTEGER,
+            coupon_id INTEGER,
+            reward_text TEXT,
+            created_at TEXT,
+            UNIQUE(user_id, level)
+        )
+        """
+    )
+
+    user = db.execute(
+        "SELECT IFNULL(exp, 0) AS exp FROM users WHERE id=?",
+        (user_id,)
+    ).fetchone()
+
+    if user is None:
+        return None
+
+    old_exp = int(user["exp"] or 0)
+    new_exp = old_exp + amount
+    level_info = get_level_info_by_exp(new_exp)
+
+    db.execute(
+        """
+        UPDATE users
+        SET exp=?, level=?
+        WHERE id=?
+        """,
+        (new_exp, level_info["level"], user_id)
+    )
+
+    db.execute(
+        """
+        INSERT INTO exp_logs(user_id, amount, reason, created_at)
+        VALUES (?, ?, ?, ?)
+        """,
+        (user_id, amount, reason, now_text())
+    )
+
+    awarded_messages = grant_level_rewards(db, user_id, old_exp, new_exp)
+
+    # 若目前登入者剛好是被加 EXP 的人，同步右上角金幣數
+    if awarded_messages and session.get("user_id") == user_id:
+        refreshed = db.execute(
+            "SELECT IFNULL(coins, 0) AS coins FROM users WHERE id=?",
+            (user_id,)
+        ).fetchone()
+        if refreshed:
+            session["coins"] = refreshed["coins"]
+
+    return {
+        "old_exp": old_exp,
+        "new_exp": new_exp,
+        "amount": amount,
+        "reason": reason,
+        "level_info": level_info,
+        "awarded_messages": awarded_messages,
+    }
+
+
 # 放這裡 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 def create_reports_table():
@@ -843,6 +1071,43 @@ def create_reports_table():
             created_at TEXT,
             reviewed_at TEXT,
             reviewed_by INTEGER
+        )
+        """
+    )
+
+
+    # 會員等級 / 經驗值 / 達標金幣獎勵
+    for sql in [
+        "ALTER TABLE users ADD COLUMN exp INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN level INTEGER DEFAULT 1"
+    ]:
+        try:
+            db.execute(sql)
+        except sqlite3.OperationalError:
+            pass
+
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS exp_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            amount INTEGER,
+            reason TEXT,
+            created_at TEXT
+        )
+        """
+    )
+
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS level_reward_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            level INTEGER,
+            coupon_id INTEGER,
+            reward_text TEXT,
+            created_at TEXT,
+            UNIQUE(user_id, level)
         )
         """
     )
@@ -2171,10 +2436,26 @@ def admin_review_identity(verify_id):
     if not require_admin_role("review_admin"):
         return "權限不足：只有審核管理員或超級管理員可以審核身分驗證"
 
-    action = request.form.get("action")
+    action = request.form.get("action", "").strip()
     reject_reason = request.form.get("reject_reason", "").strip()
 
     db = get_db()
+    ensure_admin_feature_columns(db)
+
+    # 舊資料庫保底：避免審核時缺欄位爆掉
+    for sql in [
+        "ALTER TABLE users ADD COLUMN identity_verified INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN identity_verify_status TEXT DEFAULT '未申請'",
+        "ALTER TABLE users ADD COLUMN identity_reject_reason TEXT",
+        "ALTER TABLE users ADD COLUMN identity_verified_at TEXT",
+        "ALTER TABLE identity_verifications ADD COLUMN reject_reason TEXT",
+        "ALTER TABLE identity_verifications ADD COLUMN reviewed_at TEXT",
+        "ALTER TABLE identity_verifications ADD COLUMN reviewed_by INTEGER"
+    ]:
+        try:
+            db.execute(sql)
+        except sqlite3.OperationalError:
+            pass
 
     verify = db.execute(
         """
@@ -2187,7 +2468,12 @@ def admin_review_identity(verify_id):
 
     if verify is None:
         db.close()
-        return "找不到身分驗證申請"
+        flash("找不到身分驗證申請", "danger")
+        return redirect("/admin")
+
+    notify_user_id = verify["user_id"]
+    notify_message = None
+    notify_link = None
 
     if action == "approve":
         db.execute(
@@ -2199,11 +2485,7 @@ def admin_review_identity(verify_id):
                 reviewed_by=?
             WHERE id=?
             """,
-            (
-                now_text(),
-                session["user_id"],
-                verify_id
-            )
+            (now_text(), session["user_id"], verify_id)
         )
 
         db.execute(
@@ -2215,18 +2497,11 @@ def admin_review_identity(verify_id):
                 identity_verified_at=?
             WHERE id=?
             """,
-            (
-                now_text(),
-                verify["user_id"]
-            )
+            (now_text(), notify_user_id)
         )
 
-        create_notification_realtime(
-            verify["user_id"],
-            "✅ 你的身分驗證已通過，現在可以安心交易。",
-            "/profile/" + str(verify["user_id"])
-        )
-
+        notify_message = "✅ 你的身分驗證已通過，現在可以安心交易。"
+        notify_link = "/profile/" + str(notify_user_id)
         flash("已通過身分驗證", "success")
 
     elif action == "reject":
@@ -2242,12 +2517,7 @@ def admin_review_identity(verify_id):
                 reviewed_by=?
             WHERE id=?
             """,
-            (
-                reject_reason,
-                now_text(),
-                session["user_id"],
-                verify_id
-            )
+            (reject_reason, now_text(), session["user_id"], verify_id)
         )
 
         db.execute(
@@ -2258,22 +2528,28 @@ def admin_review_identity(verify_id):
                 identity_reject_reason=?
             WHERE id=?
             """,
-            (
-                reject_reason,
-                verify["user_id"]
-            )
+            (reject_reason, notify_user_id)
         )
 
-        create_notification_realtime(
-            verify["user_id"],
-            "❌ 你的身分驗證未通過：" + reject_reason,
-            "/identity-verify"
-        )
-
+        notify_message = "❌ 你的身分驗證未通過：" + reject_reason
+        notify_link = "/identity-verify"
         flash("已駁回身分驗證", "success")
 
+    else:
+        db.close()
+        flash("審核操作錯誤，請重新操作", "danger")
+        return redirect("/admin")
+
+    # 先 commit / close，再建立通知，避免 SQLite database is locked
     db.commit()
     db.close()
+
+    if notify_message:
+        create_notification_realtime(
+            notify_user_id,
+            notify_message,
+            notify_link
+        )
 
     return redirect("/admin")
 
@@ -2721,8 +2997,19 @@ def add_product():
             add_coin_log(db, session["user_id"], 1000, "首次上架獎勵")
             listing_bonus_awarded = True
 
+        exp_result = add_user_exp(
+            db,
+            session["user_id"],
+            EXP_ACTIONS["上架商品"],
+            "上架商品"
+        )
+
         db.commit()
         db.close()
+
+        if exp_result and exp_result.get("awarded_messages"):
+            for reward_message in exp_result["awarded_messages"]:
+                flash("🎁 " + reward_message, "success")
 
         if product_count >= 30:
             unlock_achievement(
@@ -2734,9 +3021,9 @@ def add_product():
         check_all_achievements(session["user_id"])
 
         if listing_bonus_awarded:
-            flash("🎉 商品新增成功！首次上架獎勵 1000 金幣已發放！", "success")
+            flash("🎉 商品新增成功！首次上架獎勵 1000 金幣已發放，並獲得 50 經驗值！", "success")
         else:
-            flash("商品新增成功！", "success")
+            flash("商品新增成功！已獲得 50 經驗值！", "success")
 
         return redirect("/")
 
@@ -3621,6 +3908,65 @@ def profile(user_id):
         db.close()
         return "找不到使用者"
 
+    # 舊資料庫保底：避免個人頁查詢 exp / level_reward_logs 時噴錯
+    for sql in [
+        "ALTER TABLE users ADD COLUMN exp INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN level INTEGER DEFAULT 1"
+    ]:
+        try:
+            db.execute(sql)
+        except sqlite3.OperationalError:
+            pass
+
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS level_reward_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            level INTEGER,
+            coupon_id INTEGER,
+            reward_text TEXT,
+            created_at TEXT,
+            UNIQUE(user_id, level)
+        )
+        """
+    )
+
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS exp_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            amount INTEGER,
+            reason TEXT,
+            created_at TEXT
+        )
+        """
+    )
+
+    db.commit()
+
+    user = db.execute(
+        """
+        SELECT *
+        FROM users
+        WHERE id=?
+        """,
+        (user_id,)
+    ).fetchone()
+
+    member_level = get_level_info_by_exp(user["exp"] if "exp" in user.keys() else 0)
+
+    level_logs = db.execute(
+        """
+        SELECT *
+        FROM level_reward_logs
+        WHERE user_id=?
+        ORDER BY level DESC
+        """,
+        (user_id,)
+    ).fetchall()
+
     # 商品數
 
     product_count = db.execute(
@@ -3728,6 +4074,8 @@ def profile(user_id):
         rating_data=rating_data,
         sold_count=sold_count,
         user_level=user_level,
+        member_level=member_level,
+        level_logs=level_logs,
         trust_stats=trust_stats,
         products=products,
         achievements=achievements
@@ -4165,8 +4513,20 @@ def review(product_id):
         (target_user_id,)
     ).fetchone()
 
+    review_reason = "評價賣家" if target_user_id == seller_id else "評價買家"
+    exp_result = add_user_exp(
+        db,
+        session["user_id"],
+        EXP_ACTIONS.get(review_reason, 30),
+        review_reason
+    )
+
     db.commit()
     db.close()
+
+    if exp_result and exp_result.get("awarded_messages"):
+        for reward_message in exp_result["awarded_messages"]:
+            flash("🎁 " + reward_message, "success")
 
     if (
         review_stats["review_count"] >= 1
@@ -4186,7 +4546,7 @@ def review(product_id):
         f"/product/{product_id}"
     )
 
-    flash("評價送出成功！", "success")
+    flash("評價送出成功！已獲得 30 經驗值！", "success")
     return redirect(f"/product/{product_id}")
 
 
