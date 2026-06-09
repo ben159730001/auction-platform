@@ -103,151 +103,112 @@
 }
 
 
-.exp-progress-card{
-    margin-top:12px;
-    background:#fff7ed;
-    border:1px solid #fed7aa;
-    border-radius:14px;
-    padding:12px 14px;
-    max-width:520px;
+.seller-exp-card{
+    margin-top:16px;
+    padding:18px;
+    max-width:660px;
+    background:linear-gradient(135deg,#fff7ed,#fff);
+    border:2px solid #fed7aa;
+    border-radius:20px;
+    box-shadow:0 6px 18px rgba(255,87,34,0.12);
 }
-.exp-progress-top{
+.seller-exp-title{
     display:flex;
+    align-items:center;
     justify-content:space-between;
     gap:10px;
     flex-wrap:wrap;
+    margin-bottom:12px;
+}
+.seller-exp-title h3{
+    margin:0;
+    color:#ff5722;
+    font-size:22px;
+    font-weight:950;
+}
+.seller-exp-badge{
+    display:inline-block;
+    padding:7px 12px;
+    border-radius:999px;
+    background:#111827;
+    color:white;
+    font-weight:900;
+}
+.seller-exp-stats{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px;
+    margin:12px 0;
+}
+.seller-exp-stat{
+    background:white;
+    border:1px solid #fed7aa;
+    border-radius:14px;
+    padding:10px 12px;
     font-weight:900;
     color:#7c2d12;
-    margin-bottom:8px;
 }
-.exp-progress-bar{
+.seller-exp-stat strong{
+    display:block;
+    font-size:18px;
+    color:#111827;
+    margin-top:3px;
+}
+.seller-exp-bar{
     width:100%;
-    height:12px;
+    height:22px;
     background:#e5e7eb;
     border-radius:999px;
     overflow:hidden;
+    margin:12px 0 8px;
 }
-.exp-progress-fill{
+.seller-exp-fill{
+    display:block;
     height:100%;
     width:0%;
-    background:linear-gradient(90deg,#ff5722,#ffc107);
+    min-width:3%;
+    background:linear-gradient(90deg,#ff5722,#facc15);
     border-radius:999px;
+    text-align:center;
+    line-height:22px;
+    color:white;
+    font-size:12px;
+    font-weight:950;
+    transition:width .6s ease;
 }
-.exp-next-text{
-    margin-top:8px;
-    font-size:14px;
-    font-weight:800;
+.seller-exp-next{
     color:#7c2d12;
+    font-weight:850;
+    line-height:1.8;
 }
-.level-reward-list{
+.seller-exp-rewards,
+.seller-exp-logs{
     display:flex;
-    gap:8px;
     flex-wrap:wrap;
+    gap:8px;
     margin-top:10px;
 }
-.level-reward-chip{
+.seller-exp-chip{
+    display:inline-block;
+    padding:6px 10px;
+    border-radius:999px;
     background:#fff;
     border:1px solid #fed7aa;
     color:#9a3412;
-    border-radius:999px;
-    padding:5px 9px;
     font-size:13px;
     font-weight:900;
 }
+.seller-exp-log{
+    background:#ecfdf5;
+    border-color:#86efac;
+    color:#166534;
+}
+@media(max-width:768px){
+    .seller-exp-stats{
+        grid-template-columns:1fr;
+    }
+}
 
-
-/* ===== EXP 賣家等級區塊：強制顯示 ===== */
-.exp-level-box-force{
-    display:block !important;
-    visibility:visible !important;
-    opacity:1 !important;
-    margin:18px 0 18px 0 !important;
-    padding:16px 18px !important;
-    max-width:620px !important;
-    background:#fff7ed !important;
-    border:2px solid #ffb38a !important;
-    border-radius:18px !important;
-    box-shadow:0 4px 14px rgba(255,87,34,0.12) !important;
-    color:#111 !important;
-}
-.exp-level-title-force{
-    display:flex !important;
-    align-items:center !important;
-    gap:8px !important;
-    font-size:20px !important;
-    font-weight:950 !important;
-    color:#ff5722 !important;
-    margin-bottom:10px !important;
-}
-.exp-level-meta-force{
-    display:flex !important;
-    flex-wrap:wrap !important;
-    gap:8px !important;
-    margin-bottom:12px !important;
-}
-.exp-chip-force{
-    display:inline-block !important;
-    padding:7px 12px !important;
-    border-radius:999px !important;
-    background:#111827 !important;
-    color:#fff !important;
-    font-weight:900 !important;
-    font-size:14px !important;
-}
-.exp-chip-force.blue{
-    background:#0ea5e9 !important;
-    color:#062333 !important;
-}
-.exp-chip-force.gold{
-    background:#facc15 !important;
-    color:#111 !important;
-}
-.exp-bar-force{
-    width:100% !important;
-    height:18px !important;
-    background:#e5e7eb !important;
-    border-radius:999px !important;
-    overflow:hidden !important;
-    margin:10px 0 !important;
-}
-.exp-fill-force{
-    display:block !important;
-    height:100% !important;
-    min-width:3% !important;
-    background:linear-gradient(90deg,#ff5722,#facc15) !important;
-    border-radius:999px !important;
-}
-.exp-next-force{
-    font-size:14px !important;
-    font-weight:850 !important;
-    color:#7c2d12 !important;
-    line-height:1.7 !important;
-}
-.exp-rewards-force{
-    display:flex !important;
-    flex-wrap:wrap !important;
-    gap:8px !important;
-    margin-top:10px !important;
-}
-.exp-reward-force{
-    display:inline-block !important;
-    padding:6px 10px !important;
-    border-radius:999px !important;
-    background:#fff !important;
-    border:1px solid #fed7aa !important;
-    color:#9a3412 !important;
-    font-size:13px !important;
-    font-weight:900 !important;
-}
-.exp-log-box-force{
-    margin-top:12px !important;
-    padding:10px 12px !important;
-    background:#ecfdf5 !important;
-    border:1px solid #86efac !important;
-    border-radius:14px !important;
-    color:#166534 !important;
-    font-weight:900 !important;
-}
 
 </style>
 
@@ -263,6 +224,7 @@
 {% set progress_now = safe_member_level.progress|default(0) if safe_member_level else 0 %}
 {% set next_level = safe_member_level.next_level if safe_member_level and safe_member_level.next_level else none %}
 {% set exp_to_next = safe_member_level.exp_to_next|default(500) if safe_member_level else 500 %}
+{% set current_coins = user["coins"] if "coins" in user.keys() and user["coins"] is not none else 0 %}
 
 <div class="container mt-4">
 
@@ -289,16 +251,16 @@
                 <div class="identity-action-box">
                     {% if identity_verified == 1 %}
                         <span class="identity-badge identity-ok">
-                            🛡️🪪 已身分驗證
+                            🛡️ 已身分驗證
                         </span>
                     {% elif session.get("user_id") == user["id"] and identity_status == "待審核" %}
                         <span class="identity-badge identity-pending">
-                            ⏳🪪 身分驗證審核中
+                            ⏳ 身分驗證審核中
                         </span>
                         <span class="identity-small-note">管理員審核後會通知你</span>
                     {% elif session.get("user_id") == user["id"] and identity_status == "已駁回" %}
                         <span class="identity-badge identity-danger">
-                            ❌🪪 身分驗證未通過
+                            ❌ 身分驗證未通過
                         </span>
                         <a href="/identity-verify" class="btn btn-sm btn-warning">重新申請</a>
                         {% if identity_reject_reason %}
@@ -306,12 +268,12 @@
                         {% endif %}
                     {% elif session.get("user_id") == user["id"] %}
                         <a href="/identity-verify" class="btn btn-shopee btn-sm">
-                            🛡️🪪 申請身分驗證
+                            🛡️ 申請身分驗證
                         </a>
                         <span class="identity-small-note">通過後會顯示在個人頁，提升交易信任度</span>
                     {% else %}
                         <span class="identity-badge identity-muted">
-                            🔒🪪 尚未身分驗證
+                            🔒 尚未身分驗證
                         </span>
                     {% endif %}
                 </div>
@@ -349,115 +311,78 @@
                         <span class="badge bg-dark p-2">
                             {{ safe_member_level.badge|default("🌱") }} {{ safe_member_level.name|default("新手賣家") }}
                         </span>
-                        <span class="badge bg-info text-dark p-2 ms-2">
-                            EXP：{{ exp_now }}
-                        </span>
                     {% else %}
                         <span class="badge bg-dark p-2">🌱 新手賣家</span>
-                        <span class="badge bg-info text-dark p-2 ms-2">EXP：0</span>
                     {% endif %}
+                    <span class="badge bg-info text-dark p-2 ms-2">EXP：{{ exp_now }}</span>
+                    <span class="badge bg-warning text-dark p-2 ms-2">🪙 金幣：{{ current_coins }}</span>
                 </div>
 
-                <p class="mt-3">
-                    {% if safe_member_level %}
-                        {{ safe_member_level.badge|default("🌱") }} {{ safe_member_level.name|default("新手賣家") }}
-                    {% else %}
-                        🌱 新手賣家
-                    {% endif %}
-                </p>
-
-                <div class="exp-progress-card">
-                    <div class="exp-progress-top">
-                        <span>目前 EXP：{{ exp_now }}</span>
-                        {% if next_level %}
-                            <span>下一級：{{ next_level.badge|default("") }} {{ next_level.name }}</span>
-                        {% else %}
-                            <span>已達最高等級</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="exp-progress-bar">
-                        <div class="exp-progress-fill" data-progress="{{ progress_now|default(0) }}"></div>
-                    </div>
-
-                    <div class="exp-next-text">
-                        {% if next_level %}
-                            還差 {{ exp_to_next }} EXP 達到 {{ next_level.name }}，可領 {{ next_level.reward_coins|default(0) }} 金幣。
-                        {% else %}
-                            已達成鑽石賣家。
-                        {% endif %}
-                        <br>上架商品 +50 EXP｜評價賣家/買家 +30 EXP
-                    </div>
-
-                    <div class="level-reward-list">
-                        <span class="level-reward-chip">🥈 優質賣家 500 EXP：1000金幣</span>
-                        <span class="level-reward-chip">🥇 金牌賣家 1000 EXP：3000金幣</span>
-                        <span class="level-reward-chip">💎 鑽石賣家 2000 EXP：5000金幣</span>
-                    </div>
-                </div>
-
-                <!-- ===== EXP 賣家等級：強制顯示區塊 ===== -->
-                <div class="exp-level-box-force">
-                    <div class="exp-level-title-force">
-                        📈 EXP 賣家等級
-                    </div>
-
-                    <div class="exp-level-meta-force">
+                <div class="seller-exp-card">
+                    <div class="seller-exp-title">
+                        <h3>📈 EXP 賣家等級</h3>
                         {% if safe_member_level %}
-                            <span class="exp-chip-force">
+                            <span class="seller-exp-badge">
                                 {{ safe_member_level.badge|default("🌱") }} {{ safe_member_level.name|default("新手賣家") }}
                             </span>
                         {% else %}
-                            <span class="exp-chip-force">🌱 新手賣家</span>
+                            <span class="seller-exp-badge">🌱 新手賣家</span>
                         {% endif %}
+                    </div>
 
-                        <span class="exp-chip-force blue">
-                            目前 EXP：{{ exp_now }}
+                    <div class="seller-exp-stats">
+                        <div class="seller-exp-stat">
+                            目前 EXP
+                            <strong>{{ exp_now }}</strong>
+                        </div>
+                        <div class="seller-exp-stat">
+                            目前金幣
+                            <strong>{{ current_coins }}</strong>
+                        </div>
+                        <div class="seller-exp-stat">
+                            下一級
+                            {% if next_level %}
+                                <strong>{{ next_level.badge|default("") }} {{ next_level.name }}</strong>
+                            {% else %}
+                                <strong>最高等級</strong>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="seller-exp-bar">
+                        <span class="seller-exp-fill" data-progress="{{ progress_now|default(0) }}">
+                            {{ progress_now|default(0) }}%
                         </span>
-
-                        {% if next_level %}
-                            <span class="exp-chip-force gold">
-                                下一級：{{ next_level.name }}
-                            </span>
-                        {% else %}
-                            <span class="exp-chip-force gold">
-                                已達最高等級
-                            </span>
-                        {% endif %}
                     </div>
 
-                    <div class="exp-bar-force">
-                        <span class="exp-fill-force" data-progress="{{ progress_now|default(0) }}"></span>
-                    </div>
-
-                    <div class="exp-next-force">
+                    <div class="seller-exp-next">
                         {% if next_level %}
-                            還差 {{ exp_to_next }} EXP 達到 {{ next_level.name }}，可領 {{ next_level.reward_coins|default(0) }} 金幣。
+                            還差 {{ exp_to_next }} EXP 可升級為 {{ next_level.badge|default("") }} {{ next_level.name }}，
+                            達成後可獲得 {{ next_level.reward_coins|default(0) }} 金幣。
                         {% else %}
-                            已達成鑽石賣家。
+                            已達成 💎 鑽石賣家，所有等級金幣獎勵都已解鎖。
                         {% endif %}
                         <br>
                         上架商品 +50 EXP｜評價賣家/買家 +30 EXP
                     </div>
 
-                    <div class="exp-rewards-force">
-                        <span class="exp-reward-force">🥈 優質賣家 500 EXP：1000金幣</span>
-                        <span class="exp-reward-force">🥇 金牌賣家 1000 EXP：3000金幣</span>
-                        <span class="exp-reward-force">💎 鑽石賣家 2000 EXP：5000金幣</span>
+                    <div class="seller-exp-rewards">
+                        <span class="seller-exp-chip">🥈 優質賣家 500 EXP：1000 金幣</span>
+                        <span class="seller-exp-chip">🥇 金牌賣家 1000 EXP：3000 金幣</span>
+                        <span class="seller-exp-chip">💎 鑽石賣家 2000 EXP：5000 金幣</span>
                     </div>
 
-                    <div class="exp-log-box-force">
-                        💰 金幣領取紀錄：
+                    <div class="seller-exp-logs">
                         {% if safe_level_logs %}
                             {% for log in safe_level_logs %}
-                                <span>{{ log.reward_text }}｜{{ log.created_at }}</span>
+                                <span class="seller-exp-chip seller-exp-log">{{ log.reward_text }}｜{{ log.created_at }}</span>
                             {% endfor %}
                         {% else %}
-                            尚未領取等級金幣獎勵
+                            <span class="seller-exp-chip seller-exp-log">尚未領取等級金幣獎勵</span>
                         {% endif %}
                     </div>
                 </div>
-                <!-- ===== EXP 賣家等級：強制顯示區塊結束 ===== -->
+
 
                 <div class="trust-panel">
                     <div class="trust-card">
@@ -580,27 +505,18 @@
 
 </div>
 
+
 <script>
 document.addEventListener("DOMContentLoaded", function(){
-    document.querySelectorAll(".exp-progress-fill[data-progress]").forEach(function(bar){
+    document.querySelectorAll(".seller-exp-fill[data-progress]").forEach(function(bar){
         var value = parseFloat(bar.getAttribute("data-progress") || "0");
         if(isNaN(value)){ value = 0; }
         value = Math.max(0, Math.min(100, value));
         bar.style.width = value + "%";
+        bar.textContent = Math.round(value) + "%";
     });
 });
 </script>
 
-
-<script>
-document.addEventListener("DOMContentLoaded", function(){
-    document.querySelectorAll(".exp-fill-force[data-progress]").forEach(function(bar){
-        var value = parseFloat(bar.getAttribute("data-progress") || "0");
-        if(isNaN(value)){ value = 0; }
-        value = Math.max(0, Math.min(100, value));
-        bar.style.width = value + "%";
-    });
-});
-</script>
 
 {% endblock %}
