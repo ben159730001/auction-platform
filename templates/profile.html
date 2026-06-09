@@ -91,6 +91,35 @@
     background:#e5e7eb;
     color:#374151;
 }
+.email-verify-btn{
+    display:inline-block;
+    padding:7px 13px;
+    border-radius:999px;
+    background:#0ea5e9;
+    color:#062333 !important;
+    font-weight:900;
+    font-size:14px;
+    text-decoration:none;
+    border:0;
+}
+.email-verified-badge{
+    display:inline-block;
+    padding:7px 13px;
+    border-radius:999px;
+    background:#dcfce7;
+    color:#166534;
+    font-weight:900;
+    font-size:14px;
+}
+.email-unverified-badge{
+    display:inline-block;
+    padding:7px 13px;
+    border-radius:999px;
+    background:#fee2e2;
+    color:#991b1b;
+    font-weight:900;
+    font-size:14px;
+}
 .identity-small-note{
     font-size:13px;
     color:#777;
@@ -225,6 +254,7 @@
 {% set next_level = safe_member_level.next_level if safe_member_level and safe_member_level.next_level else none %}
 {% set exp_to_next = safe_member_level.exp_to_next|default(500) if safe_member_level else 500 %}
 {% set current_coins = user["coins"] if "coins" in user.keys() and user["coins"] is not none else 0 %}
+{% set email_verified = user["email_verified"] if "email_verified" in user.keys() and user["email_verified"] else 0 %}
 
 <div class="container mt-4">
 
@@ -275,6 +305,14 @@
                         <span class="identity-badge identity-muted">
                             🔒 尚未身分驗證
                         </span>
+                    {% endif %}
+
+                    {% if email_verified == 1 %}
+                        <span class="email-verified-badge">✅ 信箱已驗證</span>
+                    {% elif session.get("user_id") == user["id"] %}
+                        <a href="/resend-verification" class="email-verify-btn">📩 信箱驗證</a>
+                    {% else %}
+                        <span class="email-unverified-badge">📧 信箱未驗證</span>
                     {% endif %}
                 </div>
 
@@ -388,6 +426,10 @@
                     <div class="trust-card">
                         🟢 信箱驗證
                         <strong>{% if safe_trust["email_verified"]|default(false) %}已驗證 NCUT 信箱{% else %}尚未驗證{% endif %}</strong>
+                        {% if session.get("user_id") == user["id"] and not safe_trust["email_verified"]|default(false) %}
+                            <a href="/resend-verification" class="btn btn-sm btn-warning mt-2">📩 重寄驗證信</a>
+                            <div class="identity-small-note mt-1">完成驗證後才能上架商品與出價</div>
+                        {% endif %}
                     </div>
 
                     <div class="trust-card">

@@ -1349,6 +1349,33 @@ def send_verify_email(email, token):
     return True
 
 
+def is_email_verified(db, user_id):
+    """檢查使用者是否已完成 Email 驗證。"""
+    user = db.execute(
+        "SELECT IFNULL(email_verified, 0) AS email_verified FROM users WHERE id=?",
+        (user_id,)
+    ).fetchone()
+    return bool(user and int(user["email_verified"] or 0) == 1)
+
+
+def ensure_email_verify_token(db, user_id):
+    """沒有驗證 token 時自動產生一個，回傳 token。"""
+    user = db.execute(
+        "SELECT email_verify_token FROM users WHERE id=?",
+        (user_id,)
+    ).fetchone()
+
+    if user and user["email_verify_token"]:
+        return user["email_verify_token"]
+
+    token = secrets.token_urlsafe(32)
+    db.execute(
+        "UPDATE users SET email_verify_token=? WHERE id=?",
+        (token, user_id)
+    )
+    return token
+
+
 def add_risk_log(db, user_id, reason, score):
     """增加使用者風險分數，超過 80 自動停權。"""
     db.execute(
@@ -2181,16 +2208,16 @@ def register():
             """
             SELECT *
             FROM users
-            WHERE username=?
+            WHERE username=? OR email=?
             """,
-            (username,)
+            (username, email)
         ).fetchone()
 
         if existing_user:
 
             db.close()
 
-            flash("帳號已存在", "danger")
+            flash("帳號或信箱已存在", "danger")
 
             return redirect("/register")
 
@@ -2271,9 +2298,61 @@ def verify_email(token):
     db.commit()
     db.close()
 
-    flash("Email 驗證成功，現在可以出價了！", "success")
+    flash("Email 驗證成功，現在可以上架商品與出價了！", "success")
     return redirect("/login")
 
+
+@app.route("/resend-verification", methods=["GET", "POST"])
+def resend_verification():
+    if "user_id" not in session:
+        flash("請先登入後再重寄驗證信", "warning")
+        return redirect("/login")
+
+    db = get_db()
+    user = db.execute(
+        "SELECT * FROM users WHERE id=?",
+        (session["user_id"],)
+    ).fetchone()
+
+    if user is None:
+        db.close()
+        session.clear()
+        flash("找不到使用者，請重新登入", "danger")
+        return redirect("/login")
+
+    if int(user["email_verified"] or 0) == 1:
+        db.close()
+        flash("你的 Email 已經完成驗證", "success")
+        return redirect(f"/profile/{session['user_id']}")
+
+    if request.method == "POST":
+        token = ensure_email_verify_token(db, session["user_id"])
+        db.commit()
+
+        try:
+            send_verify_email(user["email"], token)
+            flash("📩 驗證信已重新寄出，請到你的 NCUT 信箱收信", "success")
+        except Exception as exc:
+            print("resend verify email error:", exc)
+            flash("驗證信寄送失敗，請稍後再試或請管理員查看 Render Logs", "danger")
+
+        db.close()
+        return redirect(f"/profile/{session['user_id']}")
+
+    email = user["email"]
+    db.close()
+
+    return f"""
+    <div style="max-width:560px;margin:60px auto;font-family:Arial,'Microsoft JhengHei',sans-serif;padding:24px;border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.12);">
+        <h2>📩 Email 驗證</h2>
+        <p>目前信箱：<b>{email}</b></p>
+        <p>完成 Email 驗證後，才能上架商品與出價。</p>
+        <form method="post">
+            <button style="border:0;border-radius:999px;background:#ff5722;color:white;padding:10px 18px;font-weight:800;cursor:pointer;">重新寄出驗證信</button>
+            <a href="/profile/{session['user_id']}" style="margin-left:10px;color:#555;">回個人頁</a>
+        </form>
+    </div>
+    """
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -2326,6 +2405,9 @@ def login():
                 session["admin_role"] = "super_admin"
             else:
                 session["admin_role"] = "user"
+
+            if "email_verified" in user.keys() and int(user["email_verified"] or 0) != 1:
+                flash("⚠️ 你的 Email 尚未驗證。請到個人頁或點選重寄驗證信完成驗證後，才能上架商品與出價。", "warning")
 
             return redirect("/")
 
@@ -2874,6 +2956,13 @@ def daily_checkin():
 def add_product():
     if "user_id" not in session:
         return redirect("/login")
+
+    db_check = get_db()
+    if not is_email_verified(db_check, session["user_id"]):
+        db_check.close()
+        flash("請先完成 Email 驗證，才能上架商品。", "warning")
+        return redirect("/resend-verification")
+    db_check.close()
 
     if request.method == "POST":
         db = get_db()
@@ -4024,9 +4113,8 @@ def profile(user_id):
 
     trust_stats = {
         "email_verified": (
-            "email" in user.keys()
-            and user["email"]
-            and user["email"].endswith("@gm.student.ncut.edu.tw")
+            "email_verified" in user.keys()
+            and int(user["email_verified"] or 0) == 1
         ),
         "completed_sales": int(sold_count or 0),
         "completed_trades": int(sold_count or 0),
