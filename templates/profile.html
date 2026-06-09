@@ -239,6 +239,44 @@
 }
 
 
+
+.email-profile-action-force{
+    display:flex !important;
+    gap:8px !important;
+    flex-wrap:wrap !important;
+    align-items:center !important;
+    margin-top:10px !important;
+}
+.email-profile-btn-force{
+    display:inline-block !important;
+    padding:8px 14px !important;
+    border-radius:10px !important;
+    background:#22c55e !important;
+    color:white !important;
+    font-weight:950 !important;
+    text-decoration:none !important;
+    border:2px solid #16a34a !important;
+    box-shadow:0 3px 10px rgba(34,197,94,0.25) !important;
+}
+.email-profile-ok-force{
+    display:inline-block !important;
+    padding:8px 14px !important;
+    border-radius:999px !important;
+    background:#dcfce7 !important;
+    color:#166534 !important;
+    font-weight:950 !important;
+    border:1px solid #86efac !important;
+}
+.email-profile-warn-force{
+    display:inline-block !important;
+    padding:7px 12px !important;
+    border-radius:999px !important;
+    background:#fee2e2 !important;
+    color:#991b1b !important;
+    font-weight:900 !important;
+    border:1px solid #fecaca !important;
+}
+
 </style>
 
 {% set banner_url = user["banner"] if "banner" in user.keys() and user["banner"] else "/static/default-banner.png" %}
@@ -315,6 +353,21 @@
                         <span class="email-unverified-badge">📧 信箱未驗證</span>
                     {% endif %}
                 </div>
+
+
+
+                <!-- ===== 信箱驗證按鈕：固定顯示在個人頁上方，身分驗證旁邊/下方 ===== -->
+                <div class="email-profile-action-force">
+                    {% if email_verified == 1 %}
+                        <span class="email-profile-ok-force">✅ 信箱已驗證</span>
+                    {% elif session.get("user_id") == user["id"] %}
+                        <a href="/resend-verification" class="email-profile-btn-force">📩 立即信箱驗證 / 重寄驗證信</a>
+                        <span class="email-profile-warn-force">⚠️ 信箱尚未驗證</span>
+                    {% else %}
+                        <span class="email-profile-warn-force">📧 信箱未驗證</span>
+                    {% endif %}
+                </div>
+                <!-- ===== 信箱驗證按鈕結束 ===== -->
 
                 {% if session.get("user_id") == user["id"] %}
                     <a href="/profile/edit" class="btn btn-outline-primary btn-sm mt-2">
